@@ -1,0 +1,31 @@
+version: "3.1"
+
+services:
+  appointment_business_db:
+    image: postgres:17.6
+    container_name: appointment_business_db
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: user
+      POSTGRES_DB: appointment_business_db
+      TZ: America/Hermosillo
+    volumes:
+      - ./DB/postgresql:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  adminer:
+    image: adminer
+    environment:
+      TZ: America/Hermosillo
+      ADMINER_DESIGN: "ng9"
+    ports:
+      - 8080:8080
+    depends_on:
+      appointment_business_db:
+        condition: service_started

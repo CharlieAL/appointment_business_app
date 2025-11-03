@@ -1,0 +1,23 @@
+{
+  "name": "business-backend",
+  "module": "server/index.ts",
+  "type": "module",
+  "scripts": {
+    "server": "bun run --hot server/index.ts",
+    "client": "cd client && bun run dev",
+    "dev": "concurrently \"bun run server\" \"bun run client\"",
+    "db:up": "docker compose up -d"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.44.7",
+    "hono": "^4.10.4",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.2",
+    "@types/bun": "latest",
+    "@types/pg": "^8.15.6",
+    "concurrently": "^9.2.1",
+    "drizzle-kit": "^0.31.6"
+  }
+}
