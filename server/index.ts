@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 
 const app = new Hono()
 
-app.get('/', (c) => {
+app.get('/status-server', (c) => {
 	return c.text('Hello Hono!')
 })
 
