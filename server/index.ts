@@ -7,12 +7,18 @@ import { VerifyEmail } from './templates/verify-email'
 import { sendEmail } from './utils/email'
 
 // http://localhost:3000/api/auth/reference
-const app = new Hono().basePath('/api')
+const app = new Hono().basePath('')
 
 app.use(logger())
 app.use(cors())
 
-const ApiRoutes = app.route('/v1', routesV1).get('/test-email', async (c) => {
+const ApiRoutes = app.route('/api/v1', routesV1)
+
+app.get('/', (c) => {
+	return c.json({ message: 'Welcome to the API' })
+})
+
+app.get('/test-send-email', async (c) => {
 	try {
 		await sendEmail({
 			to: 'charlywwe2010@gmail.com',

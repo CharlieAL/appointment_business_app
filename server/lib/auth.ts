@@ -27,8 +27,15 @@ export const auth = betterAuth({
 		enabled: true,
 		requireEmailVerification: true,
 	},
+	user: {
+		additionalFields: {
+			role: { type: 'string', input: false },
+			phone: { type: 'string', default: '', input: true },
+			business: { type: 'string', default: '', input: false },
+		},
+	},
 	emailVerification: {
-		sendVerificationEmail: async ({ user, url, token }, request) => {
+		sendVerificationEmail: async ({ user, url }) => {
 			await sendEmail({
 				to: user.email,
 				subject: 'Verify your email address',
@@ -48,4 +55,14 @@ export const auth = betterAuth({
 			title: 'Authentication API',
 		}),
 	],
+	logger: {
+		disabled: false,
+		disableColors: false,
+		level: 'error',
+		log: (level, message, ...args) => {
+			// Custom logging implementation
+			console.log(`[${level}] ${message}`, ...args)
+		},
+	},
 })
+export type Session = typeof auth.$Infer.Session
