@@ -3,6 +3,8 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { openAPI } from 'better-auth/plugins'
 import { db } from '~/server/db' // your drizzle instance
 import { schema } from '~/server/db/schema'
+import { VerifyEmail } from '../templates/verify-email'
+import { sendEmail } from '../utils/email'
 
 const clientUrl = process.env.CLIENT_URL
 if (!clientUrl) {
@@ -23,16 +25,20 @@ export const auth = betterAuth({
 	}),
 	emailAndPassword: {
 		enabled: true,
+		requireEmailVerification: true,
 	},
-  emailVerification:{
-    sendVerificationEmail: async ( { user, url, token }, request) => {
-      // await sendEmail({
-      //   to: user.email,
-      //   subject: "Verify your email address",
-      //   text: `Click the link to verify your email: ${url}`,
-      // });
-    },
-  },
+	emailVerification: {
+		sendVerificationEmail: async ({ user, url, token }, request) => {
+			await sendEmail({
+				to: user.email,
+				subject: 'Verify your email address',
+				template: VerifyEmail({
+					name: user.name || 'User',
+					verificationUrl: url,
+				}).toString(),
+			})
+		},
+	},
 	trustedOrigins: [clientUrl],
 	plugins: [
 		openAPI({
