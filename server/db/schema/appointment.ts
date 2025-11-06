@@ -12,7 +12,7 @@ import {
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 import { user } from './auth'
-import { clients } from './clients'
+import { clients } from './client'
 
 export const statusEnum = pgEnum('status', ['pending', 'canceled', 'completed'])
 

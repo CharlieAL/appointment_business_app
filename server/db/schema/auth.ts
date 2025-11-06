@@ -8,6 +8,8 @@ import {
 	varchar,
 } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm/relations'
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
+import z from 'zod'
 import { appointment } from './appointment'
 import { business } from './business'
 
@@ -29,6 +31,32 @@ export const user = pgTable('user', {
 		.$onUpdate(() => /* @__PURE__ */ new Date())
 		.notNull(),
 })
+
+export const userRelations = relations(user, ({ one, many }) => ({
+	business: one(business, {
+		fields: [user.business],
+		references: [business.id],
+	}),
+	services: many(appointment),
+}))
+
+export const insertUserSchema = createInsertSchema(user, {
+	name: z.string().min(1, { message: 'Name is required' }),
+	email: z.email().min(1, { message: 'Email is required' }),
+	phone: z.string().min(1, { message: 'Phone is required' }),
+	business: z.uuid().optional(),
+	role: z.enum(['owner', 'employee']).default('owner'),
+})
+
+export const selectUserSchema = createSelectSchema(user)
+
+export const createUserSchema = insertUserSchema.omit({
+	id: true,
+	createdAt: true,
+	updatedAt: true,
+})
+
+export type User = z.infer<typeof selectUserSchema>
 
 export const session = pgTable('session', {
 	id: text('id').primaryKey(),
