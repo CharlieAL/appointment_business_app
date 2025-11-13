@@ -1,12 +1,12 @@
 import { relations } from 'drizzle-orm'
-import { boolean, pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core'
+import { boolean, integer, pgTable, timestamp, uuid } from 'drizzle-orm/pg-core'
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 import { business } from './business'
 
 export const configuration = pgTable('configuration', {
 	id: uuid('id').primaryKey(),
-	duration: varchar('duration', { length: 8 }).notNull(),
+	duration: integer('duration').notNull(),
 	emailNotification: boolean('email_notification').default(false).notNull(),
 	business: uuid('business_id')
 		.notNull()

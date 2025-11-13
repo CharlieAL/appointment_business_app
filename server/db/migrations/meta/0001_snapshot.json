@@ -1,6 +1,6 @@
 {
-  "id": "57381ea6-212b-4e64-b066-acc75d815c57",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "297ef048-c3cd-419a-b925-40e596af509f",
+  "prevId": "57381ea6-212b-4e64-b066-acc75d815c57",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -14,8 +14,8 @@
           "primaryKey": true,
           "notNull": true
         },
-        "start_time": {
-          "name": "start_time",
+        "date": {
+          "name": "date",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true

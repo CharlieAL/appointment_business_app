@@ -3,13 +3,13 @@ import { pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core'
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 import { user } from './auth'
-import { clients } from './client'
+import { client } from './client'
 import { configuration } from './configuration'
 import { dailySchedule } from './daily-schedule'
 import { service } from './service'
 
 export const business = pgTable('business', {
-	id: uuid('id').primaryKey(),
+	id: uuid('id').defaultRandom().primaryKey(),
 	name: varchar('name', { length: 100 }).notNull(),
 	phone: varchar('phone', { length: 15 }).notNull().unique(),
 	email: varchar('email', { length: 100 }).notNull().unique(),
@@ -22,7 +22,7 @@ export const business = pgTable('business', {
 
 export const businessRelations = relations(business, ({ many, one }) => ({
 	services: many(service),
-	clients: many(clients),
+	clients: many(client),
 	configuration: one(configuration),
 	dailySchedule: many(dailySchedule),
 	users: many(user),

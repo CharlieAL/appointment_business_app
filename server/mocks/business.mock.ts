@@ -10,5 +10,5 @@ export const mockBusiness = (): Business => ({
 	updatedAt: faker.date.recent(),
 })
 
-export const mockBusinesses = (count = 2): Business[] =>
+export const mockBusinesses = ({ count }: { count: number }): Business[] =>
 	Array.from({ length: count }, mockBusiness)

@@ -8,16 +8,19 @@ export const mockService = (businessId: string): Service => ({
 	price: faker.number
 		.float({ min: 100, max: 1000, fractionDigits: 2 })
 		.toString(),
-	duration: faker.number.int({ min: 15, max: 120 }),
+	duration: faker.number.int({ min: 5, max: 120 }),
 	business: businessId, // relación con business
 	createdAt: faker.date.recent(),
 	updatedAt: faker.date.recent(),
 })
 
-export const mockServices = (
-	businessIds: string[],
-	perBusiness = 3
-): Service[] =>
+export const mockServices = ({
+	businessIds,
+	perBusiness,
+}: {
+	businessIds: string[]
+	perBusiness: number
+}): Service[] =>
 	businessIds.flatMap((id) =>
 		Array.from({ length: perBusiness }, () => mockService(id))
 	)

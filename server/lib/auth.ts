@@ -25,13 +25,14 @@ export const auth = betterAuth({
 	}),
 	emailAndPassword: {
 		enabled: true,
-		requireEmailVerification: true,
+		requireEmailVerification: false,
+		autoSignIn: true,
 	},
 	user: {
 		additionalFields: {
 			role: { type: 'string', input: false },
-			phone: { type: 'string', default: '', input: true },
-			business: { type: 'string', default: '', input: false },
+			phone: { type: 'string', input: true, defaultValue: null },
+			business: { defaultValue: null, input: false, type: 'string' },
 		},
 	},
 	emailVerification: {
@@ -65,4 +66,4 @@ export const auth = betterAuth({
 		},
 	},
 })
-export type Session = typeof auth.$Infer.Session
+export type Session = typeof auth.$Infer.Session.session

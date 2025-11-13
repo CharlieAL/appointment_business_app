@@ -1,8 +1,9 @@
 CREATE TYPE "public"."status" AS ENUM('pending', 'canceled', 'completed');--> statement-breakpoint
 CREATE TYPE "public"."roles" AS ENUM('owner', 'employee');--> statement-breakpoint
-CREATE TYPE "public"."week" AS ENUM('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday');--> statement-breakpoint
+CREATE TYPE "public"."week" AS ENUM('0', '1', '2', '3', '4', '5', '6');--> statement-breakpoint
 CREATE TABLE "appointments" (
 	"id" uuid PRIMARY KEY NOT NULL,
+	"start_time" timestamp NOT NULL,
 	"duration" integer NOT NULL,
 	"profit" numeric(12, 2) NOT NULL,
 	"status" "status" DEFAULT 'pending' NOT NULL,
@@ -86,7 +87,7 @@ CREATE TABLE "clients" (
 --> statement-breakpoint
 CREATE TABLE "configuration" (
 	"id" uuid PRIMARY KEY NOT NULL,
-	"duration" varchar(8) NOT NULL,
+	"duration" integer NOT NULL,
 	"email_notification" boolean DEFAULT false NOT NULL,
 	"business_id" uuid NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,

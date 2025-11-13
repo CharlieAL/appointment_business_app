@@ -4,15 +4,7 @@ import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 import { business } from './business'
 
-export const weekEnum = pgEnum('week', [
-	'monday',
-	'tuesday',
-	'wednesday',
-	'thursday',
-	'friday',
-	'saturday',
-	'sunday',
-])
+export const weekEnum = pgEnum('week', ['0', '1', '2', '3', '4', '5', '6'])
 
 export const dailySchedule = pgTable('daily_schedule', {
 	id: uuid('id').primaryKey(),

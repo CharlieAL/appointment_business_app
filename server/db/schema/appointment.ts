@@ -12,17 +12,18 @@ import {
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 import { user } from './auth'
-import { clients } from './client'
+import { client } from './client'
 
 export const statusEnum = pgEnum('status', ['pending', 'canceled', 'completed'])
-
+// todo: poner date ejemplo: dateThora y luego modificar los mocks
 export const appointment = pgTable('appointments', {
-	id: uuid('id').primaryKey(),
+	id: uuid('id').primaryKey().defaultRandom(),
+	date: timestamp('date').notNull(),
 	duration: integer('duration').notNull(),
 	profit: numeric('profit', { precision: 12, scale: 2 }).notNull(),
 	status: statusEnum('status').notNull().default('pending'),
 	notas: varchar('notas', { length: 200 }),
-	client: uuid('client_id').references(() => clients.id, {
+	client: uuid('client_id').references(() => client.id, {
 		onDelete: 'set null',
 	}),
 	worker: text('worker_id')
@@ -36,8 +37,8 @@ export const appointment = pgTable('appointments', {
 })
 
 export const appointmentRelations = relations(appointment, ({ one }) => ({
-	client: one(clients, {
-		references: [clients.id],
+	client: one(client, {
+		references: [client.id],
 		fields: [appointment.client],
 	}),
 	worker: one(user, {
@@ -47,6 +48,7 @@ export const appointmentRelations = relations(appointment, ({ one }) => ({
 }))
 
 export const insertAppointmentSchema = createInsertSchema(appointment, {
+	date: z.date({ message: 'must be a valid date value' }),
 	duration: z.number().min(1, { message: 'Duration is required' }),
 	profit: z
 		.string()

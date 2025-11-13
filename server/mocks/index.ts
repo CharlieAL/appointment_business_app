@@ -1,20 +1,66 @@
+import { mockAppointments } from './appointments.mock'
 import { mockBusinesses } from './business.mock'
+import { mockClients } from './client.mock'
+import { mockConfigurations } from './configuration.mock'
+import { mockDailySchedules } from './daily-schedule.mock'
 import { mockServices } from './service.mock'
 import { mockUsers } from './user.mock'
-
+// mejorar las funciones para entender que generan datos falsos
 export function generateMockData() {
-	const businesses = mockBusinesses(3)
-	const services = mockServices(
-		businesses.map((b) => b.id),
-		3
-	)
-	const users = mockUsers(
-		businesses.map((b) => b.id),
-		2
-	)
+	const businesses = mockBusinesses({ count: 4 })
+
+	const services = mockServices({
+		businessIds: businesses.map((b) => b.id),
+		perBusiness: 2,
+	})
+
+	const users = mockUsers({
+		businessIds: businesses.map((b) => b.id),
+		perBusiness: 1,
+	})
+
+	const configurations = mockConfigurations({
+		businessIds: businesses.map((b) => b.id),
+	})
+
+	const clients = mockClients({
+		businessIds: businesses.map((b) => b.id),
+		perBusiness: 11,
+	})
+
+	const dailySchedules = mockDailySchedules({
+		daysWork: 5,
+		businessIds: businesses.map((b) => b.id),
+	})
+
+	const clientsByBusiness = (id: string) =>
+		clients.filter((c) => c.business === id).map((c) => c.id)
+
+	const usersByBusiness = (id: string) =>
+		users.filter((u) => u.business === id).map((u) => u.id)
+
+	const appointments = mockAppointments({
+		clients: businesses.map((b) => {
+			return {
+				businessId: b.id,
+				ids: clientsByBusiness(b.id),
+			}
+		}),
+		users: businesses.map((b) => {
+			return {
+				businessId: b.id,
+				ids: usersByBusiness(b.id),
+			}
+		}),
+		perBusiness: 10,
+	})
 	return {
 		businesses,
 		services,
 		users,
+		configurations,
+		clients,
+		dailySchedules,
+		appointments,
 	}
 }

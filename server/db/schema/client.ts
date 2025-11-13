@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { appointment } from './appointment'
 import { business } from './business'
 
-export const clients = pgTable('clients', {
+export const client = pgTable('clients', {
 	id: uuid('id').primaryKey(),
 	name: varchar('name', { length: 70 }).notNull(),
 	comments: varchar('comments', { length: 200 }),
@@ -20,26 +20,26 @@ export const clients = pgTable('clients', {
 		.notNull(),
 })
 
-export const clientsRelations = relations(clients, ({ one, many }) => ({
+export const clientsRelations = relations(client, ({ one, many }) => ({
 	business: one(business, {
-		fields: [clients.business],
+		fields: [client.business],
 		references: [business.id],
 	}),
 	appointments: many(appointment),
 }))
 
-export const insertClientsSchema = createInsertSchema(clients, {
+export const insertClientSchema = createInsertSchema(client, {
 	name: z.string().min(1, { message: 'Name is required' }),
 	phone: z.string().optional(),
 	comments: z.string().optional(),
 })
 
-export const selectClientsSchema = createSelectSchema(clients)
+export const selectClientSchema = createSelectSchema(client)
 
-export const createClientsSchema = insertClientsSchema.omit({
+export const createClientSchema = insertClientSchema.omit({
 	id: true,
 	createdAt: true,
 	updatedAt: true,
 })
 
-export type Clients = z.infer<typeof selectClientsSchema>
+export type Client = z.infer<typeof selectClientSchema>

@@ -16,7 +16,13 @@ export const mockUser = (
 	updatedAt: faker.date.recent(),
 })
 
-export const mockUsers = (businessIds: string[], perBusiness = 2): User[] => {
+export const mockUsers = ({
+	businessIds,
+	perBusiness = 2,
+}: {
+	businessIds: string[]
+	perBusiness: number
+}): User[] => {
 	const users: User[] = []
 	// crear un owner por cada negocio
 	businessIds.forEach((businessId) => {
