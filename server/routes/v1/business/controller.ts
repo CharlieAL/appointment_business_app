@@ -1,38 +1,35 @@
-import { zValidator } from '@hono/zod-validator'
-import { eq } from 'drizzle-orm'
 import { Hono } from 'hono'
-import { db } from '~/server/db'
-import { user } from '~/server/db/schema/auth'
-import { business, createBusinessSchema } from '~/server/db/schema/business'
+import { HTTPException } from 'hono/http-exception'
+import { createBusinessSchema } from '~/server/db/schema/business'
+import { zValidator } from '~/server/lib/validator-wrapper'
 import { authMiddleware } from '~/server/middlewares/auth.middleware'
 import type { HonoEnv } from '~/server/types'
+import { dal } from './dal'
 
-const app = new Hono<HonoEnv>()
+export const app = new Hono<HonoEnv>()
 	.use(authMiddleware)
+	// todo: handle errors globally
 	.post('/', zValidator('json', createBusinessSchema), async (c) => {
-		// todo business create logic
-		// get user from auth middleware
-		// check if user has business
-		// if not, create business
-		// and associate to user
-		// return business id
 		const businessData = c.req.valid('json')
 
 		const $user = c.get('user')
 
-		if ($user.business) {
-			return c.json({ message: 'User already has a business' }, 400)
+		if ($user.role !== 'owner') {
+			throw new HTTPException(403, {
+				message: 'Only users with owner role can create a business',
+			})
 		}
 
-		const [$business] = await db
-			.insert(business)
-			.values(businessData)
-			.returning()
+		if ($user.business) {
+			throw new HTTPException(400, {
+				message: 'User already has a business',
+			})
+		}
 
-		await db
-			.update(user)
-			.set({ business: $business.id })
-			.where(eq(user.id, $user.id))
+		const $business = await dal.create({
+			business: businessData,
+			userId: $user.id,
+		})
 
 		c.status(201)
 		return c.json({
@@ -40,5 +37,3 @@ const app = new Hono<HonoEnv>()
 			business: $business,
 		})
 	})
-
-export { app }

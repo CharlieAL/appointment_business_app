@@ -1,7 +1,7 @@
 import { app } from './controller'
 import { dal } from './dal'
 
-export const business = {
+export const configuration = {
 	controller: app,
 	dal,
 }

@@ -12,7 +12,7 @@ import { z } from 'zod'
 import { business } from './business'
 
 export const service = pgTable('services', {
-	id: uuid('id').primaryKey(),
+	id: uuid('id').primaryKey().defaultRandom(),
 	name: varchar('name', { length: 70 }).notNull(),
 	notes: varchar('notes', { length: 200 }),
 	price: numeric('price', { precision: 12, scale: 2 }).notNull(), // Price with two decimal places example: 99.99

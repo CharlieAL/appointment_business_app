@@ -18,7 +18,7 @@ export const mockDailySchedule = ({
 	createdAt: faker.date.recent(),
 	updatedAt: faker.date.recent(),
 })
-const days = ['0', '1', '2', '3', '4', '5', '6']
+const days = ['0', '1', '2', '3', '4', '5', '6'] as dayOfWeek[]
 export const mockDailySchedules = ({
 	businessIds,
 	daysWork,

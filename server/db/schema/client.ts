@@ -6,7 +6,7 @@ import { appointment } from './appointment'
 import { business } from './business'
 
 export const client = pgTable('clients', {
-	id: uuid('id').primaryKey(),
+	id: uuid('id').primaryKey().defaultRandom(),
 	name: varchar('name', { length: 70 }).notNull(),
 	comments: varchar('comments', { length: 200 }),
 	phone: varchar('phone', { length: 15 }),

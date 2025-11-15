@@ -1,4 +1,5 @@
 import { createMiddleware } from 'hono/factory'
+import { HTTPException } from 'hono/http-exception'
 import { auth } from '../lib/auth'
 
 export const authMiddleware = createMiddleware(async (c, next) => {
@@ -7,7 +8,7 @@ export const authMiddleware = createMiddleware(async (c, next) => {
 
 	// todo: this error is fine: how to
 	if (!session || !session.user) {
-		return c.json({ error: 'Unauthorized' }, 401)
+		throw new HTTPException(401, { message: 'Unauthorized' })
 	}
 
 	c.set('user', session.user)

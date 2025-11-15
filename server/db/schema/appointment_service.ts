@@ -6,7 +6,7 @@ import { appointment } from './appointment'
 import { service } from './service'
 
 export const appointmentService = pgTable('appointment_services', {
-	id: uuid('id').primaryKey(),
+	id: uuid('id').primaryKey().defaultRandom(),
 	service: uuid('service_id')
 		.notNull()
 		.references(() => service.id, { onDelete: 'cascade' }),
