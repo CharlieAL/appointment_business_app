@@ -63,5 +63,19 @@ export const createDailyScheduleSchema = insertDailyScheduleSchema.omit({
 	createdAt: true,
 	updatedAt: true,
 })
+
+export const updateDailyScheduleSchema = createInsertSchema(dailySchedule)
+	.omit({
+		createdAt: true,
+		updatedAt: true,
+	})
+	.partial()
+	.extend({
+		id: z.uuid({ message: 'ID must be a valid UUID' }),
+		dayWeek: z.enum(['0', '1', '2', '3', '4', '5', '6'], {
+			message: 'Day of the week must be between 0 and 6',
+		}),
+	})
+
 export type Week = z.infer<typeof weekEnum>
 export type DailySchedule = z.infer<typeof selectDailyScheduleSchema>

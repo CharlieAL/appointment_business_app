@@ -5,36 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1762721878871,
-      "tag": "0000_cooing_jamie_braddock",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1762722074485,
-      "tag": "0001_jazzy_moondragon",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1762992708100,
-      "tag": "0002_vengeful_rockslide",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1763006893230,
-      "tag": "0003_foamy_mastermind",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1763155778700,
-      "tag": "0004_deep_butterfly",
+      "when": 1763170866437,
+      "tag": "0000_careful_norrin_radd",
       "breakpoints": true
     }
   ]

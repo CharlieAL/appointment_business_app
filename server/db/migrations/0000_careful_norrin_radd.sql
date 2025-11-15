@@ -1,9 +1,17 @@
 CREATE TYPE "public"."status" AS ENUM('pending', 'canceled', 'completed');--> statement-breakpoint
 CREATE TYPE "public"."roles" AS ENUM('owner', 'employee');--> statement-breakpoint
 CREATE TYPE "public"."week" AS ENUM('0', '1', '2', '3', '4', '5', '6');--> statement-breakpoint
+CREATE TABLE "appointment_services" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"service_id" uuid NOT NULL,
+	"appointment_id" uuid NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "appointments" (
-	"id" uuid PRIMARY KEY NOT NULL,
-	"start_time" timestamp NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"date" timestamp NOT NULL,
 	"duration" integer NOT NULL,
 	"profit" numeric(12, 2) NOT NULL,
 	"status" "status" DEFAULT 'pending' NOT NULL,
@@ -65,7 +73,7 @@ CREATE TABLE "verification" (
 );
 --> statement-breakpoint
 CREATE TABLE "business" (
-	"id" uuid PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" varchar(100) NOT NULL,
 	"phone" varchar(15) NOT NULL,
 	"email" varchar(100) NOT NULL,
@@ -76,7 +84,7 @@ CREATE TABLE "business" (
 );
 --> statement-breakpoint
 CREATE TABLE "clients" (
-	"id" uuid PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" varchar(70) NOT NULL,
 	"comments" varchar(200),
 	"phone" varchar(15),
@@ -86,26 +94,28 @@ CREATE TABLE "clients" (
 );
 --> statement-breakpoint
 CREATE TABLE "configuration" (
-	"id" uuid PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"duration" integer NOT NULL,
 	"email_notification" boolean DEFAULT false NOT NULL,
 	"business_id" uuid NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "configuration_business_id_unique" UNIQUE("business_id")
 );
 --> statement-breakpoint
 CREATE TABLE "daily_schedule" (
-	"id" uuid PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"day_week" "week" NOT NULL,
 	"opening_time" time NOT NULL,
 	"closing_time" time NOT NULL,
 	"business_id" uuid NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "daily_schedule_day_week_business_id_unique" UNIQUE("day_week","business_id")
 );
 --> statement-breakpoint
 CREATE TABLE "services" (
-	"id" uuid PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" varchar(70) NOT NULL,
 	"notes" varchar(200),
 	"price" numeric(12, 2) NOT NULL,
@@ -115,6 +125,8 @@ CREATE TABLE "services" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
+ALTER TABLE "appointment_services" ADD CONSTRAINT "appointment_services_service_id_services_id_fk" FOREIGN KEY ("service_id") REFERENCES "public"."services"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "appointment_services" ADD CONSTRAINT "appointment_services_appointment_id_appointments_id_fk" FOREIGN KEY ("appointment_id") REFERENCES "public"."appointments"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "appointments" ADD CONSTRAINT "appointments_client_id_clients_id_fk" FOREIGN KEY ("client_id") REFERENCES "public"."clients"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "appointments" ADD CONSTRAINT "appointments_worker_id_user_id_fk" FOREIGN KEY ("worker_id") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint

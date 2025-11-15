@@ -1,1 +1,0 @@
-ALTER TABLE "appointments" RENAME COLUMN "start_time" TO "date";

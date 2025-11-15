@@ -1,22 +1,33 @@
 import { relations } from 'drizzle-orm'
-import { boolean, integer, pgTable, timestamp, uuid } from 'drizzle-orm/pg-core'
+import {
+	boolean,
+	integer,
+	pgTable,
+	timestamp,
+	unique,
+	uuid,
+} from 'drizzle-orm/pg-core'
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 import { business } from './business'
 
-export const configuration = pgTable('configuration', {
-	id: uuid('id').primaryKey().defaultRandom(),
-	duration: integer('duration').notNull(),
-	emailNotification: boolean('email_notification').default(false).notNull(),
-	business: uuid('business_id')
-		.notNull()
-		.references(() => business.id, { onDelete: 'cascade' }),
-	createdAt: timestamp('created_at').defaultNow().notNull(),
-	updatedAt: timestamp('updated_at')
-		.defaultNow()
-		.$onUpdate(() => new Date())
-		.notNull(),
-})
+export const configuration = pgTable(
+	'configuration',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		duration: integer('duration').notNull(),
+		emailNotification: boolean('email_notification').default(false).notNull(),
+		business: uuid('business_id')
+			.notNull()
+			.references(() => business.id, { onDelete: 'cascade' }),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+		updatedAt: timestamp('updated_at')
+			.defaultNow()
+			.$onUpdate(() => new Date())
+			.notNull(),
+	},
+	(t) => [unique().on(t.business)]
+)
 
 export const configurationRelations = relations(configuration, ({ one }) => ({
 	business: one(business, {

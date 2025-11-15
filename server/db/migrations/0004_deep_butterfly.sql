@@ -1,1 +1,0 @@
-ALTER TABLE "daily_schedule" ADD CONSTRAINT "daily_schedule_day_week_business_id_unique" UNIQUE("day_week","business_id");

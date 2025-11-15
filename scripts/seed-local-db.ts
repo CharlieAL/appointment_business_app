@@ -20,7 +20,7 @@ const seedLocalDb = async () => {
 		dailySchedules,
 		appointments,
 	} = generateMockData()
-
+	//todo: delete existing data if exists
 	console.log('seeding business...')
 	await db.insert(business).values(businesses)
 	console.log('seeding services')
