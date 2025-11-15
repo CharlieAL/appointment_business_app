@@ -45,9 +45,7 @@ export const dal = {
 
 		return validateData
 	},
-	async getUncreated(
-		params
-	): Promise<Array<z.infer<typeof createDailyScheduleSchema>>> {
+	async getUncreated(params) {
 		let validateData: Array<z.infer<typeof createDailyScheduleSchema>> = []
 
 		const ds = (
