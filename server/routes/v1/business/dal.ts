@@ -14,10 +14,25 @@ interface BusinessDal {
 		business: z.input<typeof createBusinessSchema>
 		userId: string
 	}): Promise<Business>
+	get(params: { id: string }): Promise<Business | null>
 }
 
 export const dal: BusinessDal = {
-	create: async ({ business, userId }) => {
+	async get({ id }) {
+		try {
+			const [business] = await db
+				.select()
+				.from(businessModel)
+				.where(eq(businessModel.id, id))
+			return business || null
+		} catch (err) {
+			throw new HTTPException(500, {
+				message: 'Error fetching business',
+				cause: err,
+			})
+		}
+	},
+	async create({ business, userId }) {
 		try {
 			const [$business] = await db
 				.insert(businessModel)
