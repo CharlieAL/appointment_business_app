@@ -16,7 +16,7 @@ interface BusinessDal {
 	}): Promise<Business>
 }
 
-export const dal = {
+export const dal: BusinessDal = {
 	create: async ({ business, userId }) => {
 		try {
 			const [$business] = await db
@@ -37,4 +37,4 @@ export const dal = {
 			})
 		}
 	},
-} as BusinessDal
+}

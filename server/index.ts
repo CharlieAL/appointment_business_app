@@ -1,5 +1,4 @@
 import { Hono } from 'hono'
-
 import { cors } from 'hono/cors'
 import { HTTPException } from 'hono/http-exception'
 import { logger } from 'hono/logger'
@@ -43,6 +42,7 @@ app.get('/test-send-email', async (c) => {
 		return c.text('Failed to send test email.', 500)
 	}
 })
+
 app.onError((error, c) => {
 	if (error instanceof HTTPException) {
 		console.error(error.cause)

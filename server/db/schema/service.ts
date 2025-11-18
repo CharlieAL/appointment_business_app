@@ -49,6 +49,7 @@ export const selectServiceSchema = createSelectSchema(service)
 export const createServiceSchema = insertServiceSchema.omit({
 	id: true,
 	createdAt: true,
+	business: true,
 	updatedAt: true,
 })
 

@@ -8,8 +8,8 @@ import {
 	type createConfigurationsSchema,
 	type updateConfigurationSchema,
 } from '~/server/db/schema/configuration'
-import { dal as dalDs } from '../daily-schedule/dal'
 import type { DailySchedule } from '~/server/db/schema/daily-schedule'
+import { dal as dalDs } from '../daily-schedule/dal'
 
 type getAllByBusinessResponse = {
 	configuration: Configuration | null
@@ -32,7 +32,7 @@ interface ConfigDal {
 	}): Promise<getAllByBusinessResponse>
 }
 
-export const dal = {
+export const dal: ConfigDal = {
 	async create({ businessId, config }) {
 		//todo validate if config for business already exists
 		const existedConfig = await this.getByBusiness({ businessId })
@@ -106,4 +106,4 @@ export const dal = {
 			configuration: config,
 		}
 	},
-} as ConfigDal
+}

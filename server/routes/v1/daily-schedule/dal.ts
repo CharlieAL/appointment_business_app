@@ -29,7 +29,7 @@ interface DailyScheduleDal {
 		businesId: string
 	}): Promise<Array<z.infer<typeof updateDailyScheduleSchema>> | []>
 }
-export const dal = {
+export const dal: DailyScheduleDal = {
 	async getCreated(params) {
 		let validateData: Array<z.infer<typeof updateDailyScheduleSchema>> = []
 		const ds = (
@@ -62,7 +62,6 @@ export const dal = {
 	},
 	async create(params) {
 		// validar que los dias sean unicos por negocio
-		//
 
 		const validateData = await this.getUncreated({
 			data: params.data,
@@ -122,4 +121,4 @@ export const dal = {
 		}
 		return
 	},
-} as DailyScheduleDal
+}
