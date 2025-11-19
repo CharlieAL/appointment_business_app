@@ -56,9 +56,12 @@ export const dal: BusinessDal = {
 	},
 	async update({ id, business }) {
 		try {
+			const cleanedData = Object.fromEntries(
+				Object.entries(business).filter(([_, v]) => v != null)
+			)
 			const [$business] = await db
 				.update(businessModel)
-				.set(business)
+				.set(cleanedData)
 				.where(eq(businessModel.id, id))
 				.returning()
 			return success($business)

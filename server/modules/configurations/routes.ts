@@ -15,9 +15,17 @@ export const app = new Hono<HonoEnv>()
 		if (!user.business)
 			throw new HTTPException(400, { message: 'User has no business assigned' })
 
-		const config = await dal.getByBusiness({ businessId: user.business })
+		const { data, error } = await dal.getByBusiness({
+			businessId: user.business,
+		})
+		if (error) {
+			throw new HTTPException(error.code, {
+				message: error.message,
+				cause: error.cause,
+			})
+		}
 		c.status(200)
-		return c.json({ config })
+		return c.json({ data })
 	})
 	.post(zValidator('json', createConfigurationsSchema), async (c) => {
 		// todo: validate body, get user and then validete with business id and then create config
@@ -27,12 +35,21 @@ export const app = new Hono<HonoEnv>()
 		if (!user.business)
 			throw new HTTPException(400, { message: 'User has no business assigned' })
 
-		const config = await dal.create({ businessId: user.business, config: body })
+		const { data, error } = await dal.create({
+			businessId: user.business,
+			config: body,
+		})
+
+		if (error) {
+			throw new HTTPException(error.code, {
+				message: error.message,
+				cause: error.cause,
+			})
+		}
 
 		c.status(201)
 		return c.json({
-			message: 'Configuration created successfully',
-			config,
+			data,
 		})
 	})
 	// todo: is actaually needed to update config by id? when user has only one config by business
@@ -47,16 +64,33 @@ export const app = new Hono<HonoEnv>()
 			throw new HTTPException(400, { message: 'User has no business assigned' })
 		}
 
-		await dal.update({ id, data: body, businessId: user.business })
-
-		return c.json({ message: 'Configuration updated successfully' })
+		const { data, error } = await dal.update({
+			id,
+			data: body,
+			businessId: user.business,
+		})
+		if (error) {
+			throw new HTTPException(error.code, {
+				message: error.message,
+				cause: error.cause,
+			})
+		}
+		return c.json({ data })
 	})
 	.get('/all', async (c) => {
 		const user = c.get('user')
+
 		if (!user.business)
 			throw new HTTPException(400, { message: 'User has no business assigned' })
 
-		const all = await dal.getAllByBusiness({ businessId: user.business })
-
-		return c.json({ data: all })
+		const { data, error } = await dal.getAllByBusiness({
+			businessId: user.business,
+		})
+		if (error) {
+			throw new HTTPException(error.code, {
+				message: error.message,
+				cause: error.cause,
+			})
+		}
+		return c.json({ data })
 	})

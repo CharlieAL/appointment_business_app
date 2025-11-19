@@ -1,14 +1,20 @@
 import { eq } from 'drizzle-orm'
-import { HTTPException } from 'hono/http-exception'
-import type { z } from 'zod'
 import { db } from '~/server/db'
 import {
 	type Configuration,
+	type CreateConfigurationInput,
 	configuration as configModel,
-	type createConfigurationsSchema,
-	type updateConfigurationSchema,
+	type UpdateConfigurationInput,
 } from '~/server/db/schema/configuration'
 import type { DailySchedule } from '~/server/db/schema/daily-schedule'
+import {
+	type DalError,
+	DatabaseError,
+	NotFoundError,
+	ValidationError,
+} from '~/server/errors/dal-error'
+import type { AsyncResult } from '~/server/types'
+import { failure, success } from '~/server/types'
 import { dal as dalDs } from '../daily-schedule/dal'
 
 type getAllByBusinessResponse = {
@@ -17,30 +23,31 @@ type getAllByBusinessResponse = {
 }
 interface ConfigDal {
 	create(params: {
-		config: z.input<typeof createConfigurationsSchema>
+		config: CreateConfigurationInput
 		businessId: string
-	}): Promise<Configuration>
+	}): AsyncResult<Configuration, DalError>
 	update(params: {
 		id: string
-		data: z.input<typeof updateConfigurationSchema>
+		data: UpdateConfigurationInput
 		businessId: string
-	}): Promise<void>
-	getById(params: { id: string }): Promise<Configuration | null>
-	getByBusiness(params: { businessId: string }): Promise<Configuration | null>
+	}): AsyncResult<Configuration, DalError>
+	getById(params: { id: string }): AsyncResult<Configuration, DalError>
+	getByBusiness(params: {
+		businessId: string
+	}): AsyncResult<Configuration, DalError>
 	getAllByBusiness(params: {
 		businessId: string
-	}): Promise<getAllByBusinessResponse>
+	}): AsyncResult<getAllByBusinessResponse, DalError>
 }
 
 export const dal: ConfigDal = {
 	async create({ businessId, config }) {
-		//todo validate if config for business already exists
 		const existedConfig = await this.getByBusiness({ businessId })
 
 		if (existedConfig)
-			throw new HTTPException(400, {
-				message: 'Configuration for this business already exists',
-			})
+			return failure(
+				new ValidationError('Configuration for this business already exists')
+			)
 
 		try {
 			const [$config] = await db
@@ -51,59 +58,70 @@ export const dal: ConfigDal = {
 				})
 				.returning()
 
-			return $config
+			return success($config)
 		} catch (err) {
-			throw new HTTPException(500, {
-				message: 'Error creating configuration',
-				cause: err,
-			})
+			return failure(new DatabaseError('Error creating configuration', err))
 		}
 	},
 	async update({ id, data, businessId }) {
-		//todo validate if config exists
-		//todo handle updatedAt field
-		//todo is nescessary update by id, if business is unique?
-		const config = await this.getById({ id })
-		if (!config)
-			throw new HTTPException(404, { message: 'Configuration not found' })
+		const { data: config, error } = await this.getById({ id })
+		if (error) return failure(error)
 
 		if (businessId !== config.business)
-			throw new HTTPException(403, {
-				message: 'You can only update configurations for your own business',
-			})
-
+			return failure(
+				new ValidationError('Configuration does not belong to the business')
+			)
 		try {
-			await db.update(configModel).set(data).where(eq(configModel.id, id))
+			const [$update] = await db
+				.update(configModel)
+				.set(data)
+				.where(eq(configModel.id, id))
+				.returning()
+			return success($update)
 		} catch (error) {
-			console.error('Error updating configuration:', error)
-			throw new HTTPException(500, { message: 'Error updating configuration' })
+			return failure(new DatabaseError('Error updating configuration', error))
 		}
 	},
 	async getById({ id }) {
-		const [config] = await db
-			.select()
-			.from(configModel)
-			.where(eq(configModel.id, id))
-			.limit(1)
-		if (!config) return null
-		return config
+		try {
+			const [config] = await db
+				.select()
+				.from(configModel)
+				.where(eq(configModel.id, id))
+				.limit(1)
+			if (!config) return failure(new NotFoundError('Configuration', id))
+			return success(config)
+		} catch (error) {
+			return failure(
+				new DatabaseError('Error getting configuration by id', error)
+			)
+		}
 	},
 	async getByBusiness({ businessId }) {
-		const [$config] = await db
-			.select()
-			.from(configModel)
-			.where(eq(configModel.business, businessId))
-			.limit(1)
-		if (!$config) return null
-		return $config
+		try {
+			const [$config] = await db
+				.select()
+				.from(configModel)
+				.where(eq(configModel.business, businessId))
+				.limit(1)
+			if (!$config)
+				return failure(new NotFoundError('Configuration for business'))
+			return success($config)
+		} catch (error) {
+			return failure(
+				new DatabaseError('Error getting configuration by business', error)
+			)
+		}
 	},
 	async getAllByBusiness({ businessId }) {
+		//TODO: this not working when i change dal in daily-schedule to class
 		const ds = await dalDs.getByBusiness({ bussinessId: businessId })
-		const config = await this.getByBusiness({ businessId })
+		const { data, error } = await this.getByBusiness({ businessId })
+		if (error) return failure(error)
 
-		return {
+		return success({
 			dailySchedule: ds,
-			configuration: config,
-		}
+			configuration: data,
+		})
 	},
 }

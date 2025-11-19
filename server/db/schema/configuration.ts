@@ -59,3 +59,7 @@ export const updateConfigurationSchema = createInsertSchema(configuration)
 	.partial()
 
 export type Configuration = z.infer<typeof selectConfigurationSchema>
+export type CreateConfigurationInput = z.infer<
+	typeof createConfigurationsSchema
+>
+export type UpdateConfigurationInput = Partial<CreateConfigurationInput>

@@ -38,8 +38,11 @@ export const selectClientSchema = createSelectSchema(client)
 
 export const createClientSchema = insertClientSchema.omit({
 	id: true,
+	business: true,
 	createdAt: true,
 	updatedAt: true,
 })
 
 export type Client = z.infer<typeof selectClientSchema>
+export type CreateClientInput = z.infer<typeof createClientSchema>
+export type UpdateClientInput = Partial<CreateClientInput>
