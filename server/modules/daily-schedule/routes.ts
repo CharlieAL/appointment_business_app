@@ -10,6 +10,8 @@ import { authMiddleware } from '~/server/middlewares/auth.middleware'
 import type { HonoEnv } from '~/server/types'
 import { dal } from './dal'
 
+//TODO: implement delete route
+
 export const app = new Hono<HonoEnv>()
 	.use(authMiddleware)
 	.get(async (c) => {
@@ -18,8 +20,16 @@ export const app = new Hono<HonoEnv>()
 		if (!user.business)
 			throw new HTTPException(400, { message: 'User has no business assigned' })
 
-		const ds = await dal.getByBusiness({ bussinessId: user.business })
-		return c.json({ dailySchedule: ds })
+		const { data, error } = await dal.getByBusiness({
+			bussinessId: user.business,
+		})
+		if (error) {
+			throw new HTTPException(error.code, {
+				message: error.message,
+				cause: error.cause,
+			})
+		}
+		return c.json({ data })
 	})
 	.post(
 		zValidator('json', z.array(z.object(createDailyScheduleSchema.shape))),
@@ -40,10 +50,19 @@ export const app = new Hono<HonoEnv>()
 			if (body.length < 1)
 				throw new HTTPException(400, { message: 'Body cannot be empty' })
 
-			await dal.create({ data: body, businessId: user.business })
+			const { data, error } = await dal.create({
+				data: body,
+				businessId: user.business,
+			})
+			if (error) {
+				throw new HTTPException(error.code, {
+					message: error.message,
+					cause: error.cause,
+				})
+			}
 
 			c.status(201)
-			return c.json({ message: 'created succesfully' })
+			return c.json({ data })
 		}
 	)
 	.patch(
@@ -51,6 +70,8 @@ export const app = new Hono<HonoEnv>()
 		async (c) => {
 			const body = c.req.valid('json')
 			const user = c.get('user')
+
+			console.log('PATCH /daily-schedule body:', body)
 
 			if (!user.business) {
 				throw new HTTPException(400, {
@@ -60,9 +81,19 @@ export const app = new Hono<HonoEnv>()
 			if (body.length < 1)
 				throw new HTTPException(400, { message: 'Body cannot be empty' })
 
-			await dal.update({ data: body, id: user.id, businesId: user.business })
+			const { data, error } = await dal.update({
+				data: body,
+				id: user.id,
+				businesId: user.business,
+			})
+			if (error) {
+				throw new HTTPException(error.code, {
+					message: error.message,
+					cause: error.cause,
+				})
+			}
 
 			c.status(201)
-			return c.json({ message: 'updated succesfully' })
+			return c.json({ data })
 		}
 	)

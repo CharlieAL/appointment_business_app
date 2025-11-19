@@ -114,8 +114,10 @@ export const dal: ConfigDal = {
 		}
 	},
 	async getAllByBusiness({ businessId }) {
-		//TODO: this not working when i change dal in daily-schedule to class
-		const ds = await dalDs.getByBusiness({ bussinessId: businessId })
+		const { data: ds, error: errorDs } = await dalDs.getByBusiness({
+			bussinessId: businessId,
+		})
+		if (errorDs) return failure(errorDs)
 		const { data, error } = await this.getByBusiness({ businessId })
 		if (error) return failure(error)
 

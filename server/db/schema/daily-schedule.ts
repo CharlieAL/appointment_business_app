@@ -63,7 +63,7 @@ export const createDailyScheduleSchema = insertDailyScheduleSchema.omit({
 	createdAt: true,
 	updatedAt: true,
 })
-
+//TODO: i dont tested this yet, but it should work
 export const updateDailyScheduleSchema = createInsertSchema(dailySchedule)
 	.omit({
 		createdAt: true,
@@ -75,7 +75,21 @@ export const updateDailyScheduleSchema = createInsertSchema(dailySchedule)
 		dayWeek: z.enum(['0', '1', '2', '3', '4', '5', '6'], {
 			message: 'Day of the week must be between 0 and 6',
 		}),
+		openingTime: z.iso
+			.time({
+				precision: -1,
+				message: 'Opening time is not valid',
+			})
+			.optional(),
+		closingTime: z.iso
+			.time({
+				precision: -1,
+				message: 'Closing time is not valid',
+			})
+			.optional(),
 	})
 
 export type Week = z.infer<typeof weekEnum>
 export type DailySchedule = z.infer<typeof selectDailyScheduleSchema>
+export type CreateDailySchedule = z.infer<typeof createDailyScheduleSchema>
+export type UpdateDailySchedule = z.infer<typeof updateDailyScheduleSchema>

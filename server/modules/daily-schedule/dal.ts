@@ -1,40 +1,52 @@
 import { eq } from 'drizzle-orm'
-import { HTTPException } from 'hono/http-exception'
-import type { z } from 'zod'
 import { db } from '~/server/db'
 import {
-	type createDailyScheduleSchema,
+	type CreateDailySchedule,
 	type DailySchedule,
 	dailySchedule as dailyScheduleModel,
-	type updateDailyScheduleSchema,
+	type UpdateDailySchedule,
 } from '~/server/db/schema/daily-schedule'
+import {
+	type DalError,
+	DatabaseError,
+	ValidationError,
+} from '~/server/errors/dal-error'
+import type { AsyncResult } from '~/server/types'
+import { failure, success } from '~/server/types'
 
 interface DailyScheduleDal {
 	create(params: {
-		data: Array<z.infer<typeof createDailyScheduleSchema>>
+		data: CreateDailySchedule[]
 		businessId: string
-	}): Promise<void>
-	getByBusiness(params: { bussinessId: string }): Promise<DailySchedule[]>
+	}): AsyncResult<DailySchedule[], DalError>
+	getByBusiness(params: {
+		bussinessId: string
+	}): AsyncResult<DailySchedule[], DalError>
 	update(params: {
-		data: Array<z.infer<typeof updateDailyScheduleSchema>>
+		data: UpdateDailySchedule[]
 		id: string
 		businesId: string
-	}): Promise<void>
+	}): AsyncResult<DailySchedule[], DalError>
 	getUncreated(params: {
-		data: Array<z.infer<typeof createDailyScheduleSchema>>
+		data: CreateDailySchedule[]
 		businesId: string
-	}): Promise<Array<z.infer<typeof createDailyScheduleSchema>> | []>
+	}): AsyncResult<CreateDailySchedule[], DalError>
 	getCreated(params: {
-		data: Array<z.infer<typeof updateDailyScheduleSchema>>
+		data: UpdateDailySchedule[]
 		businesId: string
-	}): Promise<Array<z.infer<typeof updateDailyScheduleSchema>> | []>
+	}): AsyncResult<UpdateDailySchedule[], DalError>
 }
+
 export const dal: DailyScheduleDal = {
 	async getCreated(params) {
-		let validateData: Array<z.infer<typeof updateDailyScheduleSchema>> = []
-		const ds = (
-			await this.getByBusiness({ bussinessId: params.businesId })
-		).map((d) => ({ day: d.dayWeek }))
+		let validateData: UpdateDailySchedule[] = []
+
+		const { data, error } = await this.getByBusiness({
+			bussinessId: params.businesId,
+		})
+		if (error) return failure(error)
+
+		const ds = data.map((d) => ({ day: d.dayWeek }))
 
 		if (ds.length > 0) {
 			const days = ds.flatMap((d) => d.day)
@@ -43,14 +55,19 @@ export const dal: DailyScheduleDal = {
 			})
 		}
 
-		return validateData
+		if (validateData.length === 0)
+			return failure(new ValidationError('No daily schedules found to update'))
+
+		return success(validateData)
 	},
 	async getUncreated(params) {
-		let validateData: Array<z.infer<typeof createDailyScheduleSchema>> = []
+		let validateData: CreateDailySchedule[] = []
 
-		const ds = (
-			await this.getByBusiness({ bussinessId: params.businesId })
-		).map((d) => ({ day: d.dayWeek }))
+		const { data, error } = await this.getByBusiness({
+			bussinessId: params.businesId,
+		})
+		if (error) return failure(error)
+		const ds = data.map((d) => ({ day: d.dayWeek }))
 
 		if (ds.length > 0) {
 			const days = ds.flatMap((d) => d.day)
@@ -58,21 +75,23 @@ export const dal: DailyScheduleDal = {
 		} else {
 			validateData = params.data
 		}
-		return validateData
+
+		if (validateData.length === 0)
+			return failure(
+				new ValidationError('All provided daily schedules already exist')
+			)
+
+		return success(validateData)
 	},
 	async create(params) {
 		// validar que los dias sean unicos por negocio
 
-		const validateData = await this.getUncreated({
+		const { data: validateData, error } = await this.getUncreated({
 			data: params.data,
 			businesId: params.businessId,
 		})
 
-		if (validateData.length === 0) {
-			throw new HTTPException(400, {
-				message: 'Daily schedule for this business already exists',
-			})
-		}
+		if (error) return failure(error)
 
 		const data = validateData.map((d) => ({
 			...d,
@@ -80,45 +99,56 @@ export const dal: DailyScheduleDal = {
 		}))
 
 		try {
-			await db.insert(dailyScheduleModel).values(data)
+			const $ds = await db.insert(dailyScheduleModel).values(data).returning()
+			return success($ds)
 		} catch (error) {
-			throw new HTTPException(500, {
-				message: 'Error creating daily schedule',
-				cause: error,
-			})
+			return failure(
+				new DatabaseError('Failed to create daily schedules', error)
+			)
 		}
 	},
 	async getByBusiness(params) {
-		const ds = await db
-			.select()
-			.from(dailyScheduleModel)
-			.where(eq(dailyScheduleModel.business, params.bussinessId))
+		try {
+			const ds = await db
+				.select()
+				.from(dailyScheduleModel)
+				.where(eq(dailyScheduleModel.business, params.bussinessId))
 
-		return ds
+			return success(ds)
+		} catch (error) {
+			return failure(
+				new DatabaseError('Failed to retrieve daily schedules', error)
+			)
+		}
 	},
 	async update(params) {
 		//todo get each ds and update one by one
 		//before that validate if the dayWeek already exists
 		//
 
-		const validateData = await this.getCreated({
+		const { data: validateData, error } = await this.getCreated({
 			businesId: params.businesId,
 			data: params.data,
 		})
-		if (validateData.length === 0)
-			throw new HTTPException(400, {
-				message: 'No daily schedule found to update',
-			})
-
-		for (const d of validateData) {
-			await db
-				.update(dailyScheduleModel)
-				.set({
-					openingTime: d.openingTime,
-					closingTime: d.closingTime,
-				})
-				.where(eq(dailyScheduleModel.dayWeek, d.dayWeek))
+		if (error) return failure(error)
+		try {
+			const ds: DailySchedule[] = []
+			for (const d of validateData) {
+				const [$ds] = await db
+					.update(dailyScheduleModel)
+					.set({
+						openingTime: d.openingTime,
+						closingTime: d.closingTime,
+					})
+					.where(eq(dailyScheduleModel.dayWeek, d.dayWeek))
+					.returning()
+				ds.push($ds)
+			}
+			return success(ds)
+		} catch (error) {
+			return failure(
+				new DatabaseError('Failed to update daily schedules', error)
+			)
 		}
-		return
 	},
 }
