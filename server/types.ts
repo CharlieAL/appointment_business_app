@@ -17,3 +17,18 @@ export interface DalResponse<T> {
 		code?: ContentfulStatusCode
 	}
 }
+
+export type Result<T, E = Error> =
+	| { data: T; error: null }
+	| { data: null; error: E }
+
+export type AsyncResult<T, E = Error> = Promise<Result<T, E>>
+
+// Helper functions
+export function success<T>(data: T): Result<T, never> {
+	return { data, error: null }
+}
+
+export function failure<E extends Error>(error: E): Result<never, E> {
+	return { data: null, error }
+}

@@ -18,12 +18,12 @@ export const app = new Hono<HonoEnv>()
 			})
 		}
 
-		const { data, err } = await dal.get({ id: user.business })
+		const { data, error } = await dal.get({ id: user.business })
 
-		if (err) {
-			throw new HTTPException(err?.code ?? 500, {
-				message: err.message,
-				cause: err.cause,
+		if (error) {
+			throw new HTTPException(error.code, {
+				message: error.message,
+				cause: error.cause,
 			})
 		}
 
@@ -54,15 +54,21 @@ export const app = new Hono<HonoEnv>()
 			})
 		}
 
-		const business = await dal.create({
+		const { data, error } = await dal.create({
 			business: businessData,
 			userId: user.id,
 		})
 
+		if (error) {
+			throw new HTTPException(error.code, {
+				message: error.message,
+				cause: error.cause,
+			})
+		}
+
 		c.status(201)
 		return c.json({
-			message: 'Business created and user updated',
-			business: business,
+			business: data,
 		})
 	})
 	.patch(zValidator('json', createBusinessSchema.partial()), async (c) => {
@@ -81,12 +87,19 @@ export const app = new Hono<HonoEnv>()
 			})
 		}
 
-		await dal.update({
+		const { data, error } = await dal.update({
 			id: user.business,
 			business: businessData,
 		})
 
+		if (error) {
+			throw new HTTPException(error.code, {
+				message: error.message,
+				cause: error.cause,
+			})
+		}
+
 		return c.json({
-			message: 'Business updated successfully',
+			business: data,
 		})
 	})
