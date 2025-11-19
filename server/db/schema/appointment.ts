@@ -15,10 +15,10 @@ import { user } from './auth'
 import { client } from './client'
 
 export const statusEnum = pgEnum('status', ['pending', 'canceled', 'completed'])
-// todo: poner date ejemplo: dateThora y luego modificar los mocks
+// the date its ok? : Yes but to sort by date need querie ? i can change to date only  and add start time and end time
 export const appointment = pgTable('appointments', {
 	id: uuid('id').primaryKey().defaultRandom(),
-	date: timestamp('date').notNull(),
+	date: timestamp('date').notNull(), // dateTtime - 2025-12-31T08:00:00.000Z
 	duration: integer('duration').notNull(),
 	profit: numeric('profit', { precision: 12, scale: 2 }).notNull(),
 	status: statusEnum('status').notNull().default('pending'),

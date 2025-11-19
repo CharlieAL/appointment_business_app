@@ -1,22 +1,34 @@
 import { eq } from 'drizzle-orm'
-import { HTTPException } from 'hono/http-exception'
-import type { z } from 'zod'
 import { db } from '~/server/db'
 import { user } from '~/server/db/schema/auth'
 import {
 	type Business,
 	business as businessModel,
-	type createBusinessSchema,
+	type CreateBusinessInput,
+	type UpdateBusinessInput,
 } from '~/server/db/schema/business'
+
+interface DalResponse<T> {
+	data?: T | null
+	error?: {
+		message: string
+		cause?: unknown
+		code?: number
+	}
+}
 
 interface BusinessDal {
 	create(params: {
-		business: z.input<typeof createBusinessSchema>
+		business: CreateBusinessInput
 		userId: string
-	}): Promise<Business>
-	get(params: { id: string }): Promise<Business | null>
+	}): Promise<DalResponse<Business>>
+	get(params: { id: string }): Promise<DalResponse<Business>>
+	update(params: {
+		id: string
+		business: UpdateBusinessInput
+	}): Promise<DalResponse<void>>
 }
-
+// TODO: delete all HTTPException and return { content, error }
 export const dal: BusinessDal = {
 	async get({ id }) {
 		try {
@@ -24,12 +36,11 @@ export const dal: BusinessDal = {
 				.select()
 				.from(businessModel)
 				.where(eq(businessModel.id, id))
-			return business || null
+			return { data: business }
 		} catch (err) {
-			throw new HTTPException(500, {
-				message: 'Error fetching business',
-				cause: err,
-			})
+			return {
+				error: { message: 'Error fetching business', cause: err },
+			}
 		}
 	},
 	async create({ business, userId }) {
@@ -44,12 +55,27 @@ export const dal: BusinessDal = {
 				.set({ business: $business.id })
 				.where(eq(user.id, userId))
 
-			return $business
+			return {
+				data: $business,
+			}
 		} catch (err) {
-			throw new HTTPException(500, {
-				message: 'Error creating business',
-				cause: err,
-			})
+			return {
+				error: { message: 'Error creating business', cause: err },
+			}
+		}
+	},
+	async update({ id, business }) {
+		try {
+			await db
+				.update(businessModel)
+				.set(business)
+				.where(eq(businessModel.id, id))
+				.returning()
+			return { data: null }
+		} catch (err) {
+			return {
+				error: { message: 'Error updating business', cause: err },
+			}
 		}
 	},
 }

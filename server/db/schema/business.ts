@@ -43,3 +43,5 @@ export const createBusinessSchema = insertBusinessSchema.omit({
 })
 
 export type Business = z.infer<typeof selectBusinessSchema>
+export type CreateBusinessInput = z.infer<typeof createBusinessSchema>
+export type UpdateBusinessInput = Partial<CreateBusinessInput>
