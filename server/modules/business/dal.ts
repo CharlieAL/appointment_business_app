@@ -8,14 +8,7 @@ import {
 	type UpdateBusinessInput,
 } from '~/server/db/schema/business'
 
-interface DalResponse<T> {
-	data?: T | null
-	error?: {
-		message: string
-		cause?: unknown
-		code?: number
-	}
-}
+import type { DalResponse } from '~/server/types'
 
 interface BusinessDal {
 	create(params: {
@@ -28,7 +21,6 @@ interface BusinessDal {
 		business: UpdateBusinessInput
 	}): Promise<DalResponse<void>>
 }
-// TODO: delete all HTTPException and return { content, error }
 export const dal: BusinessDal = {
 	async get({ id }) {
 		try {
@@ -39,7 +31,7 @@ export const dal: BusinessDal = {
 			return { data: business }
 		} catch (err) {
 			return {
-				error: { message: 'Error fetching business', cause: err },
+				err: { message: 'Error fetching business', cause: err },
 			}
 		}
 	},
@@ -60,7 +52,7 @@ export const dal: BusinessDal = {
 			}
 		} catch (err) {
 			return {
-				error: { message: 'Error creating business', cause: err },
+				err: { message: 'Error creating business', cause: err },
 			}
 		}
 	},
@@ -74,7 +66,7 @@ export const dal: BusinessDal = {
 			return { data: null }
 		} catch (err) {
 			return {
-				error: { message: 'Error updating business', cause: err },
+				err: { message: 'Error updating business', cause: err },
 			}
 		}
 	},

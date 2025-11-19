@@ -1,7 +1,7 @@
-import { app } from './controller'
 import { dal } from './dal'
+import { app } from './routes'
 
 export const clients = {
-	controller: app,
+	routes: app,
 	dal,
 }

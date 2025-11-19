@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { HTTPException } from 'hono/http-exception'
 import { logger } from 'hono/logger'
-import { routesV1 } from './routes/v1'
+import { app as routesV1 } from './modules'
 import { VerifyEmail } from './templates/verify-email'
 import { sendEmail } from './utils/email'
 

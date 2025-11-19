@@ -7,12 +7,11 @@ import { configuration } from './configurations'
 import { dailySchedule } from './daily-schedule'
 import { services } from './services'
 
-const app = new Hono()
+export const app = new Hono()
 	.on(['POST', 'GET'], '/auth/*', (c) => auth.handler(c.req.raw))
-	.route('/business', business.controller)
-	.route('/appointments', appointment.controller)
-	.route('/configurations', configuration.controller)
-	.route('/daily-schedule', dailySchedule.controller)
-	.route('/services', services.controller)
-	.route('/clients', clients.controller)
-export { app as routesV1 }
+	.route('/business', business.routes)
+	.route('/appointments', appointment.routes)
+	.route('/configurations', configuration.routes)
+	.route('/daily-schedule', dailySchedule.routes)
+	.route('/services', services.routes)
+	.route('/clients', clients.routes)

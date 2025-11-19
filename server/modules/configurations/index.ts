@@ -1,7 +1,7 @@
-import { app } from './controller'
 import { dal } from './dal'
+import { app } from './routes'
 
 export const configuration = {
-	controller: app,
+	routes: app,
 	dal,
 }

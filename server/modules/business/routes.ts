@@ -4,6 +4,7 @@ import { createBusinessSchema } from '~/server/db/schema/business'
 import { zValidator } from '~/server/lib/validator-wrapper'
 import { authMiddleware } from '~/server/middlewares/auth.middleware'
 import type { HonoEnv } from '~/server/types'
+
 import { dal } from './dal'
 // Should I create the delete business route?
 export const app = new Hono<HonoEnv>()
@@ -17,16 +18,23 @@ export const app = new Hono<HonoEnv>()
 			})
 		}
 
-		const business = await dal.get({ id: user.business })
+		const { data, err } = await dal.get({ id: user.business })
 
-		if (!business) {
+		if (err) {
+			throw new HTTPException(err?.code ?? 500, {
+				message: err.message,
+				cause: err.cause,
+			})
+		}
+
+		if (!data) {
 			throw new HTTPException(404, {
 				message: 'Business not found',
 			})
 		}
 
 		return c.json({
-			business: business,
+			business: data,
 		})
 	})
 	.post(zValidator('json', createBusinessSchema), async (c) => {

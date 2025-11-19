@@ -22,6 +22,7 @@ interface DalClient {
 	getById(params: { clientId: string }): Promise<Client | null>
 }
 
+// TODO: delete all HTTPException and return { content, error }
 export const dal: DalClient = {
 	async getById(params) {
 		const [client] = await db
