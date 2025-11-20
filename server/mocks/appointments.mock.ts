@@ -4,10 +4,12 @@ import type { Appointment } from '../db/schema/appointment'
 export const mockAppointment = ({
 	clientId,
 	workerId,
+	business,
 	startTime,
 }: {
 	clientId: string
 	workerId: string
+	business: string
 	startTime: Date
 }): Appointment => ({
 	id: faker.string.uuid(),
@@ -18,6 +20,7 @@ export const mockAppointment = ({
 	profit: faker.number.int({ min: 100, max: 10000 }).toString(),
 	client: clientId,
 	worker: workerId,
+	business: business,
 	createdAt: faker.date.recent(),
 	updatedAt: faker.date.recent(),
 })
@@ -60,6 +63,7 @@ export const mockAppointments = ({
 	type TestAppoint = {
 		startTime: Date
 		userId: string
+		business: string
 		clientId: string
 	}
 
@@ -76,6 +80,7 @@ export const mockAppointments = ({
 			const dateS = `${date}T${at}:00:00.000Z`
 
 			testAppoints.push({
+				business: client.businessId,
 				startTime: new Date(dateS),
 				userId: users[Math.round(Math.random())],
 				clientId: clientIds[index],
@@ -84,6 +89,7 @@ export const mockAppointments = ({
 	}
 	return testAppoints.map((a) =>
 		mockAppointment({
+			business: a.business,
 			clientId: a.clientId,
 			workerId: a.userId,
 			startTime: a.startTime,

@@ -11,7 +11,9 @@ import {
 } from 'drizzle-orm/pg-core'
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
+import { appointmentService } from './appointment_service'
 import { user } from './auth'
+import { business } from './business'
 import { client } from './client'
 
 export const statusEnum = pgEnum('status', ['pending', 'canceled', 'completed'])
@@ -26,6 +28,11 @@ export const appointment = pgTable('appointments', {
 	client: uuid('client_id').references(() => client.id, {
 		onDelete: 'set null',
 	}),
+	business: uuid('business_id')
+		.notNull()
+		.references(() => business.id, {
+			onDelete: 'cascade',
+		}),
 	worker: text('worker_id')
 		.notNull()
 		.references(() => user.id, { onDelete: 'set null' }),
@@ -36,7 +43,7 @@ export const appointment = pgTable('appointments', {
 		.notNull(),
 })
 
-export const appointmentRelations = relations(appointment, ({ one }) => ({
+export const appointmentRelations = relations(appointment, ({ one, many }) => ({
 	client: one(client, {
 		references: [client.id],
 		fields: [appointment.client],
@@ -44,6 +51,11 @@ export const appointmentRelations = relations(appointment, ({ one }) => ({
 	worker: one(user, {
 		references: [user.id],
 		fields: [appointment.worker],
+	}),
+	services: many(appointmentService),
+	business: one(business, {
+		references: [business.id],
+		fields: [appointment.business],
 	}),
 }))
 

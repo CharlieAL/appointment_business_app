@@ -4,6 +4,7 @@ import { mockClients } from './client.mock'
 import { mockConfigurations } from './configuration.mock'
 import { mockDailySchedules } from './daily-schedule.mock'
 import { mockServices } from './service.mock'
+import { mockAppointmentServices } from './serviceAppointment.mock'
 import { mockUsers } from './user.mock'
 // mejorar las funciones para entender que generan datos falsos
 export function generateMockData() {
@@ -54,6 +55,24 @@ export function generateMockData() {
 		}),
 		perBusiness: 10,
 	})
+
+	const appointmentServiceIdsByBusiness = businesses.map((b) => {
+		const appointmentIds = appointments
+			.filter((a) => a.business === b.id)
+			.map((a) => a.id)
+		const serviceIds = services
+			.filter((s) => s.business === b.id)
+			.map((s) => s.id)
+		return {
+			appointmentId: appointmentIds,
+			serviceIds: serviceIds,
+		}
+	})
+
+	const appointmentService = mockAppointmentServices({
+		params: appointmentServiceIdsByBusiness,
+	})
+
 	return {
 		businesses,
 		services,
@@ -62,5 +81,6 @@ export function generateMockData() {
 		clients,
 		dailySchedules,
 		appointments,
+		appointmentService,
 	}
 }

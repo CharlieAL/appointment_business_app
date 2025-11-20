@@ -1,5 +1,6 @@
 import { db, pool } from '~/server/db'
 import { appointment } from '~/server/db/schema/appointment'
+import { appointmentService as asModule } from '~/server/db/schema/appointment_service'
 import { user } from '~/server/db/schema/auth'
 import { business } from '~/server/db/schema/business'
 import { client } from '~/server/db/schema/client'
@@ -19,8 +20,9 @@ const seedLocalDb = async () => {
 		clients,
 		dailySchedules,
 		appointments,
+		appointmentService,
 	} = generateMockData()
-	//todo: delete existing data if exists
+	// todo: delete existing data if exists
 	console.log('seeding business...')
 	await db.insert(business).values(businesses)
 	console.log('seeding services')
@@ -35,6 +37,8 @@ const seedLocalDb = async () => {
 	await db.insert(dailySchedule).values(dailySchedules)
 	console.log('seeding appointment')
 	await db.insert(appointment).values(appointments)
+	console.log('seeding appointmentService')
+	await db.insert(asModule).values(appointmentService)
 }
 
 seedLocalDb()

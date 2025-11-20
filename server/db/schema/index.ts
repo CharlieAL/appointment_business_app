@@ -1,4 +1,5 @@
 import * as appointment from './appointment'
+import * as appointmentService from './appointment_service'
 import * as auth from './auth'
 import * as business from './business'
 import * as clients from './client'
@@ -7,11 +8,12 @@ import * as dailySchedule from './daily-schedule'
 import * as service from './service'
 
 export const schema = {
-	appointment,
-	dailySchedule,
-	business,
-	clients,
-	service,
-	configuration,
-	auth,
+	...appointment,
+	...dailySchedule,
+	...business,
+	...clients,
+	...service,
+	...configuration,
+	...auth,
+	...appointmentService,
 }

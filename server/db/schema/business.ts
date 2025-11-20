@@ -2,6 +2,7 @@ import { relations } from 'drizzle-orm'
 import { pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core'
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
+import { appointment } from './appointment'
 import { user } from './auth'
 import { client } from './client'
 import { configuration } from './configuration'
@@ -26,6 +27,7 @@ export const businessRelations = relations(business, ({ many, one }) => ({
 	configuration: one(configuration),
 	dailySchedule: many(dailySchedule),
 	users: many(user),
+	appointments: many(appointment),
 }))
 
 export const insertBusinessSchema = createInsertSchema(business, {
