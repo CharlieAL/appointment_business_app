@@ -6,36 +6,9 @@ import {
 	dailySchedule as dailyScheduleModel,
 	type UpdateDailySchedule,
 } from '~/server/db/schema/daily-schedule'
-import {
-	type DalError,
-	DatabaseError,
-	ValidationError,
-} from '~/server/errors/dal-error'
-import type { AsyncResult } from '~/server/types'
+import { DatabaseError, ValidationError } from '~/server/errors/dal-error'
 import { failure, success } from '~/server/types'
-
-interface DailyScheduleDal {
-	create(params: {
-		data: CreateDailySchedule[]
-		businessId: string
-	}): AsyncResult<DailySchedule[], DalError>
-	getByBusiness(params: {
-		bussinessId: string
-	}): AsyncResult<DailySchedule[], DalError>
-	update(params: {
-		data: UpdateDailySchedule[]
-		id: string
-		businesId: string
-	}): AsyncResult<DailySchedule[], DalError>
-	getUncreated(params: {
-		data: CreateDailySchedule[]
-		businesId: string
-	}): AsyncResult<CreateDailySchedule[], DalError>
-	getCreated(params: {
-		data: UpdateDailySchedule[]
-		businesId: string
-	}): AsyncResult<UpdateDailySchedule[], DalError>
-}
+import type { DailyScheduleDal } from './types'
 
 export const dal: DailyScheduleDal = {
 	async getCreated(params) {

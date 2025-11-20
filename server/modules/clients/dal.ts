@@ -1,33 +1,10 @@
 import { eq } from 'drizzle-orm'
 import { db } from '~/server/db'
-import {
-	type Client,
-	type CreateClientInput,
-	client as clientModule,
-	type UpdateClientInput,
-} from '~/server/db/schema/client'
+import { client as clientModule } from '~/server/db/schema/client'
 
-import {
-	type DalError,
-	DatabaseError,
-	NotFoundError,
-} from '~/server/errors/dal-error'
-import type { AsyncResult } from '~/server/types'
+import { DatabaseError, NotFoundError } from '~/server/errors/dal-error'
 import { failure, success } from '~/server/types'
-
-interface DalClient {
-	create(params: {
-		data: CreateClientInput
-		businessId: string
-	}): AsyncResult<Client, DalError>
-	getByBusiness(params: { businessId: string }): AsyncResult<Client[], DalError>
-	deleteById(params: { clientId: string }): AsyncResult<void, DalError>
-	updateById(params: {
-		clientId: string
-		data: UpdateClientInput
-	}): AsyncResult<Client, DalError>
-	getById(params: { clientId: string }): AsyncResult<Client, DalError>
-}
+import type { DalClient } from './types'
 
 export const dal: DalClient = {
 	async getById(params) {

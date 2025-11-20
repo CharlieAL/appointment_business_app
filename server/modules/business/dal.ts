@@ -1,27 +1,11 @@
 import { eq } from 'drizzle-orm'
 import { db } from '~/server/db'
 import { user } from '~/server/db/schema/auth'
-import {
-	type Business,
-	business as businessModel,
-	type CreateBusinessInput,
-	type UpdateBusinessInput,
-} from '~/server/db/schema/business'
-import { type DalError, DatabaseError } from '~/server/errors/dal-error'
-import type { AsyncResult } from '~/server/types'
+import { business as businessModel } from '~/server/db/schema/business'
+import { DatabaseError } from '~/server/errors/dal-error'
 import { failure, success } from '~/server/types'
+import type { BusinessDal } from './types'
 
-interface BusinessDal {
-	create(params: {
-		business: CreateBusinessInput
-		userId: string
-	}): AsyncResult<Business, DalError>
-	get(params: { id: string }): AsyncResult<Business, DalError>
-	update(params: {
-		id: string
-		business: UpdateBusinessInput
-	}): AsyncResult<Business, DalError>
-}
 export const dal: BusinessDal = {
 	async get({ id }) {
 		try {

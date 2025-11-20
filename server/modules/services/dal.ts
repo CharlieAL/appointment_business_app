@@ -1,34 +1,9 @@
 import { eq } from 'drizzle-orm'
 import { db } from '~/server/db'
-import {
-	type CreateServiceSchemaInput,
-	type Service,
-	service as serviceModule,
-	type UpdateServiceSchemaInput,
-} from '~/server/db/schema/service'
-import {
-	type DalError,
-	DatabaseError,
-	NotFoundError,
-} from '~/server/errors/dal-error'
-import type { AsyncResult } from '~/server/types'
+import { service as serviceModule } from '~/server/db/schema/service'
+import { DatabaseError, NotFoundError } from '~/server/errors/dal-error'
 import { failure, success } from '~/server/types'
-
-interface DalService {
-	create(params: {
-		data: CreateServiceSchemaInput
-		businessId: string
-	}): AsyncResult<Service, DalError>
-	getByBusiness(params: {
-		businessId: string
-	}): AsyncResult<Service[], DalError>
-	deleteById(params: { serviceId: string }): AsyncResult<void, DalError>
-	updateById(params: {
-		serviceId: string
-		data: UpdateServiceSchemaInput
-	}): AsyncResult<Service, DalError>
-	getById(params: { serviceId: string }): AsyncResult<Service, DalError>
-}
+import type { DalService } from './types.ts'
 
 export const dal: DalService = {
 	async getById(params) {

@@ -1,44 +1,14 @@
 import { eq } from 'drizzle-orm'
 import { db } from '~/server/db'
+import { configuration as configModel } from '~/server/db/schema/configuration'
 import {
-	type Configuration,
-	type CreateConfigurationInput,
-	configuration as configModel,
-	type UpdateConfigurationInput,
-} from '~/server/db/schema/configuration'
-import type { DailySchedule } from '~/server/db/schema/daily-schedule'
-import {
-	type DalError,
 	DatabaseError,
 	NotFoundError,
 	ValidationError,
 } from '~/server/errors/dal-error'
-import type { AsyncResult } from '~/server/types'
 import { failure, success } from '~/server/types'
 import { dal as dalDs } from '../daily-schedule/dal'
-
-type getAllByBusinessResponse = {
-	configuration: Configuration | null
-	dailySchedule: DailySchedule[]
-}
-interface ConfigDal {
-	create(params: {
-		config: CreateConfigurationInput
-		businessId: string
-	}): AsyncResult<Configuration, DalError>
-	update(params: {
-		id: string
-		data: UpdateConfigurationInput
-		businessId: string
-	}): AsyncResult<Configuration, DalError>
-	getById(params: { id: string }): AsyncResult<Configuration, DalError>
-	getByBusiness(params: {
-		businessId: string
-	}): AsyncResult<Configuration, DalError>
-	getAllByBusiness(params: {
-		businessId: string
-	}): AsyncResult<getAllByBusinessResponse, DalError>
-}
+import type { ConfigDal } from './types'
 
 export const dal: ConfigDal = {
 	async create({ businessId, config }) {
