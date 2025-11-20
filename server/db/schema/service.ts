@@ -54,3 +54,5 @@ export const createServiceSchema = insertServiceSchema.omit({
 })
 
 export type Service = z.infer<typeof selectServiceSchema>
+export type CreateServiceSchemaInput = z.infer<typeof createServiceSchema>
+export type UpdateServiceSchemaInput = Partial<CreateServiceSchemaInput>

@@ -15,8 +15,17 @@ export const app = new Hono<HonoEnv>()
 			throw new HTTPException(400, { message: 'User has no business assigned' })
 		}
 
-		const services = await dal.getByBusiness({ businessId: user.business })
-		return c.json({ services })
+		const { data, error } = await dal.getByBusiness({
+			businessId: user.business,
+		})
+
+		if (error) {
+			throw new HTTPException(error.code, {
+				message: error.message,
+				cause: error.cause,
+			})
+		}
+		return c.json({ data })
 	})
 	.post(zValidator('json', createServiceSchema), async (c) => {
 		const body = c.req.valid('json')
@@ -26,10 +35,19 @@ export const app = new Hono<HonoEnv>()
 			throw new HTTPException(400, { message: 'User has no business assigned' })
 		}
 
-		const service = await dal.create({ data: body, businessId: user.business })
+		const { data, error } = await dal.create({
+			data: body,
+			businessId: user.business,
+		})
+		if (error) {
+			throw new HTTPException(error.code, {
+				message: error.message,
+				cause: error.cause,
+			})
+		}
 
 		c.status(201)
-		return c.json({ message: 'Service created successfully', service })
+		return c.json({ data })
 	})
 	.patch(
 		':id',
@@ -45,9 +63,15 @@ export const app = new Hono<HonoEnv>()
 				})
 			}
 
-			await dal.updateById({ serviceId, data: body })
+			const { data, error } = await dal.updateById({ serviceId, data: body })
+			if (error) {
+				throw new HTTPException(error.code, {
+					message: error.message,
+					cause: error.cause,
+				})
+			}
 			c.status(200)
-			return c.json({ message: 'Service updated successfully' })
+			return c.json({ data })
 		}
 	)
 	.delete(':id', async (c) => {
@@ -57,7 +81,14 @@ export const app = new Hono<HonoEnv>()
 		if (!user.business) {
 			throw new HTTPException(400, { message: 'User has no business assigned' })
 		}
-		await dal.deleteById({ serviceId })
+		const { error } = await dal.deleteById({ serviceId })
+
+		if (error) {
+			throw new HTTPException(error.code, {
+				message: error.message,
+				cause: error.cause,
+			})
+		}
 
 		c.status(200)
 		return c.json({ message: 'Service deleted successfully' })

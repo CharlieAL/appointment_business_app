@@ -1,52 +1,68 @@
 import { eq } from 'drizzle-orm'
-import { HTTPException } from 'hono/http-exception'
-import type { z } from 'zod'
 import { db } from '~/server/db'
 import {
-	type createServiceSchema,
+	type CreateServiceSchemaInput,
 	type Service,
 	service as serviceModule,
+	type UpdateServiceSchemaInput,
 } from '~/server/db/schema/service'
+import {
+	type DalError,
+	DatabaseError,
+	NotFoundError,
+} from '~/server/errors/dal-error'
+import type { AsyncResult } from '~/server/types'
+import { failure, success } from '~/server/types'
 
 interface DalService {
 	create(params: {
-		data: z.infer<typeof createServiceSchema>
+		data: CreateServiceSchemaInput
 		businessId: string
-	}): Promise<Service>
-	getByBusiness(params: { businessId: string }): Promise<Service[]>
-	deleteById(params: { serviceId: string }): Promise<void>
+	}): AsyncResult<Service, DalError>
+	getByBusiness(params: {
+		businessId: string
+	}): AsyncResult<Service[], DalError>
+	deleteById(params: { serviceId: string }): AsyncResult<void, DalError>
 	updateById(params: {
 		serviceId: string
-		data: Partial<z.infer<typeof createServiceSchema>>
-	}): Promise<void>
-	getById(params: { serviceId: string }): Promise<Service | null>
+		data: UpdateServiceSchemaInput
+	}): AsyncResult<Service, DalError>
+	getById(params: { serviceId: string }): AsyncResult<Service, DalError>
 }
 
 export const dal: DalService = {
 	async getById(params) {
-		const [service] = await db
-			.select()
-			.from(serviceModule)
-			.where(eq(serviceModule.id, params.serviceId))
-		return service
+		try {
+			const [service] = await db
+				.select()
+				.from(serviceModule)
+				.where(eq(serviceModule.id, params.serviceId))
+
+			if (!service)
+				return failure(new NotFoundError('Service', params.serviceId))
+			return success(service)
+		} catch (error) {
+			return failure(new DatabaseError('Error getting service by id', error))
+		}
 	},
 	async updateById(params) {
 		// todo validate if service exists before update
-		const serviceExists = await this.getById({ serviceId: params.serviceId })
-		if (!serviceExists)
-			throw new HTTPException(404, { message: 'Service not found' })
+		const { data: serviceExists, error } = await this.getById({
+			serviceId: params.serviceId,
+		})
+		if (error) return failure(error)
 		try {
-			await db
+			const [$service] = await db
 				.update(serviceModule)
 				.set({
 					...params.data,
 				})
-				.where(eq(serviceModule.id, params.serviceId))
+				.where(eq(serviceModule.id, serviceExists.id))
+				.returning()
+
+			return success($service)
 		} catch (error) {
-			throw new HTTPException(500, {
-				message: 'Error updating service',
-				cause: error,
-			})
+			return failure(new DatabaseError('Error updating service', error))
 		}
 	},
 	async create(params) {
@@ -60,42 +76,38 @@ export const dal: DalService = {
 				})
 				.returning()
 
-			if (!$service) {
-				throw new HTTPException(500, {
-					message: 'Service could not be created',
-				})
-			}
-			return $service
+			return success($service)
 		} catch (error) {
-			throw new HTTPException(500, {
-				message: 'Error service',
-				cause: error,
-			})
+			return failure(new DatabaseError('Error creating service', error))
 		}
 	},
 	async getByBusiness(params) {
-		const services = await db
-			.select()
-			.from(serviceModule)
-			.where(eq(serviceModule.business, params.businessId))
-		if (services.length < 1) {
-			throw new HTTPException(404, {
-				message: 'No services found for this business',
-			})
+		try {
+			const services = await db
+				.select()
+				.from(serviceModule)
+				.where(eq(serviceModule.business, params.businessId))
+
+			return success(services)
+		} catch (error) {
+			return failure(
+				new DatabaseError('Error getting services by business', error)
+			)
 		}
-		return services
 	},
 	async deleteById(params) {
-		// todo validate if service exists before delete
 		try {
-			await db
-				.delete(serviceModule)
-				.where(eq(serviceModule.id, params.serviceId))
-		} catch (error) {
-			throw new HTTPException(500, {
-				message: 'Error deleting service',
-				cause: error,
+			const { data, error } = await this.getById({
+				serviceId: params.serviceId,
 			})
+
+			if (error) return failure(error)
+
+			await db.delete(serviceModule).where(eq(serviceModule.id, data.id))
+
+			return success(undefined)
+		} catch (error) {
+			return failure(new DatabaseError('Error deleting service', error))
 		}
 	},
 }
