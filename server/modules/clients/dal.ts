@@ -1,7 +1,6 @@
 import { eq } from 'drizzle-orm'
 import { db } from '~/server/db'
 import { client as clientModule } from '~/server/db/schema/client'
-
 import { DatabaseError, NotFoundError } from '~/server/errors/dal-error'
 import { failure, success } from '~/server/types'
 import type { DalClient } from './types'
@@ -27,6 +26,7 @@ export const dal: DalClient = {
 			const cleanedData = Object.fromEntries(
 				Object.entries(params.data).filter(([_, v]) => v != null)
 			)
+
 			const [$client] = await db
 				.update(clientModule)
 				.set(cleanedData)

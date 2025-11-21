@@ -12,11 +12,11 @@ import type { ConfigDal } from './types'
 
 export const dal: ConfigDal = {
 	async create({ businessId, config }) {
-		const existedConfig = await this.getByBusiness({ businessId })
+		const { data } = await this.getByBusiness({ businessId })
 
-		if (existedConfig)
+		if (data)
 			return failure(
-				new ValidationError('Configuration for this business already exists')
+				new ValidationError('Configuration already exists for business')
 			)
 
 		try {
@@ -74,8 +74,7 @@ export const dal: ConfigDal = {
 				.from(configModel)
 				.where(eq(configModel.business, businessId))
 				.limit(1)
-			if (!$config)
-				return failure(new NotFoundError('Configuration for business'))
+			if (!$config) return failure(new NotFoundError('Configuration'))
 			return success($config)
 		} catch (error) {
 			return failure(

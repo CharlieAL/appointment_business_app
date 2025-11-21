@@ -1,6 +1,9 @@
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
-import { createServiceSchema } from '~/server/db/schema/service'
+import {
+	createServiceSchema,
+	updateServiceSchema,
+} from '~/server/db/schema/service'
 import { zValidator } from '~/server/lib/validator-wrapper'
 import { authMiddleware } from '~/server/middlewares/auth.middleware'
 import type { HonoEnv } from '~/server/types'
@@ -49,31 +52,27 @@ export const app = new Hono<HonoEnv>()
 		c.status(201)
 		return c.json({ data })
 	})
-	.patch(
-		':id',
-		zValidator('json', createServiceSchema.partial()),
-		async (c) => {
-			const body = c.req.valid('json')
-			const user = c.get('user')
-			const serviceId = c.req.param('id')
+	.patch(':id', zValidator('json', updateServiceSchema), async (c) => {
+		const body = c.req.valid('json')
+		const user = c.get('user')
+		const serviceId = c.req.param('id')
 
-			if (!user.business) {
-				throw new HTTPException(400, {
-					message: 'User has no business assigned',
-				})
-			}
-
-			const { data, error } = await dal.updateById({ serviceId, data: body })
-			if (error) {
-				throw new HTTPException(error.code, {
-					message: error.message,
-					cause: error.cause,
-				})
-			}
-			c.status(200)
-			return c.json({ data })
+		if (!user.business) {
+			throw new HTTPException(400, {
+				message: 'User has no business assigned',
+			})
 		}
-	)
+
+		const { data, error } = await dal.updateById({ serviceId, data: body })
+		if (error) {
+			throw new HTTPException(error.code, {
+				message: error.message,
+				cause: error.cause,
+			})
+		}
+		c.status(200)
+		return c.json({ data })
+	})
 	.delete(':id', async (c) => {
 		const user = c.get('user')
 		const serviceId = c.req.param('id')

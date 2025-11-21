@@ -53,6 +53,12 @@ export const createServiceSchema = insertServiceSchema.omit({
 	updatedAt: true,
 })
 
+export const updateServiceSchema = createServiceSchema
+	.extend({
+		price: createServiceSchema.shape.price.optional().nullish(),
+	})
+	.partial()
+
 export type Service = z.infer<typeof selectServiceSchema>
 export type CreateServiceSchemaInput = z.infer<typeof createServiceSchema>
-export type UpdateServiceSchemaInput = Partial<CreateServiceSchemaInput>
+export type UpdateServiceSchemaInput = z.infer<typeof updateServiceSchema>

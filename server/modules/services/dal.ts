@@ -22,15 +22,24 @@ export const dal: DalService = {
 	},
 	async updateById(params) {
 		// todo validate if service exists before update
+
 		const { data: serviceExists, error } = await this.getById({
 			serviceId: params.serviceId,
 		})
+
 		if (error) return failure(error)
+
+		//TODO: delete nullable fields from params.data to avoid overwriting with nullable
+
 		try {
+			const cleanedData = Object.fromEntries(
+				Object.entries(params.data).filter(([_, v]) => v != null)
+			)
+
 			const [$service] = await db
 				.update(serviceModule)
 				.set({
-					...params.data,
+					...cleanedData,
 				})
 				.where(eq(serviceModule.id, serviceExists.id))
 				.returning()

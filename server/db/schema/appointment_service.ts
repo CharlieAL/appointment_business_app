@@ -45,10 +45,10 @@ export const insertAppointmentServiceSchema = createInsertSchema(
 export const selectAppointmentServiceSchema =
 	createSelectSchema(appointmentService)
 
-export const createBusinessSchema = selectAppointmentServiceSchema.omit({
+export const createASSchema = selectAppointmentServiceSchema.omit({
 	id: true,
 	createdAt: true,
 	updatedAt: true,
 })
 
-export type AppointmentService = z.infer<typeof selectAppointmentServiceSchema>
+export type AppointmentService = z.infer<typeof createASSchema>
