@@ -12,6 +12,9 @@ export const dal: DalClient = {
 				.select()
 				.from(clientModule)
 				.where(eq(clientModule.id, params.clientId))
+			if (!client) {
+				return failure(new NotFoundError('Client', params.clientId))
+			}
 			return success(client)
 		} catch (error) {
 			return failure(new DatabaseError('Error getting client by id', error))

@@ -15,6 +15,13 @@
       "when": 1763634669200,
       "tag": "0001_tired_supreme_intelligence",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1763766138573,
+      "tag": "0002_nasty_rockslide",
+      "breakpoints": true
     }
   ]
 }

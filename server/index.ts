@@ -20,6 +20,17 @@ const ApiRoutes = app
 	.notFound((c) => {
 		return c.json({ message: 'Route Not Found' }, 404)
 	})
+	.onError((error, c) => {
+		if (error instanceof HTTPException) {
+			console.error('Custom error HTTPException STACK', error.stack)
+			console.error('Custom error HTTPException MESSAGE', error.message)
+			console.error('Custom error HTTPException CAUSE', error.cause)
+			// Get the custom response
+			return error.getResponse()
+		}
+		console.error('Global error handler:', error)
+		return c.json({ message: 'Internal Server Error' }, 500)
+	})
 
 app.get('/test-send-email', async (c) => {
 	try {
@@ -41,16 +52,6 @@ app.get('/test-send-email', async (c) => {
 		console.error('Error sending test email:', error)
 		return c.text('Failed to send test email.', 500)
 	}
-})
-
-app.onError((error, c) => {
-	if (error instanceof HTTPException) {
-		console.error(error.cause)
-		// Get the custom response
-		return error.getResponse()
-	}
-	console.error('Global error handler:', error)
-	return c.json({ message: 'Internal Server Error' }, 500)
 })
 
 export type ApiRoutes = typeof ApiRoutes

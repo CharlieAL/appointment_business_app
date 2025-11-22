@@ -81,12 +81,12 @@ const app = new Hono<HonoEnv>()
 			throw new HTTPException(400, { message: 'User has no business assigned' })
 		}
 
-		console.log('/POST APPOINTMENT BODY', body)
 		const { data, error } = await dal.create({
 			appointment: body,
 			worker: user.id,
 			business: user.business,
 		})
+
 		if (error) {
 			throw new HTTPException(error.code, {
 				message: error.message,

@@ -4,7 +4,7 @@ export class DalError extends Error {
 	constructor(
 		message: string,
 		public readonly code: ContentfulStatusCode,
-		public readonly couse?: unknown
+		public readonly cause?: unknown
 	) {
 		super(message)
 		this.name = 'DalError'
@@ -33,7 +33,7 @@ export class ValidationError extends DalError {
 }
 
 export class DatabaseError extends DalError {
-	constructor(message: string, couse?: unknown) {
-		super(message, 500, couse)
+	constructor(message: string, cause?: unknown) {
+		super(message, 500, cause)
 	}
 }

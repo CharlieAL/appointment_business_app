@@ -30,6 +30,10 @@ export type AppointmentDal = {
 		appointment: CreateAppointment
 	}): AsyncResult<Appointment, DalError>
 	getFilter(params: { filters: AppointmentFilters }): SQL | undefined
+	validateClientBusiness(params: {
+		clientId: string
+		businessId: string
+	}): AsyncResult<string, DalError>
 }
 
 /*
