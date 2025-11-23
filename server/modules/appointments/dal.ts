@@ -6,67 +6,65 @@ import { DatabaseError, ValidationError } from '~/server/errors/dal-error'
 import { failure, success } from '~/server/types'
 import { dal as dalClient } from '../clients/dal'
 import { dal as dalService } from '../services/dal'
-import type { AppointmentDal } from './types'
+import type { AppointmentDal, AppointmentValidation } from './types'
 
-//TODO: check if client exists
-export const dal: AppointmentDal = {
-	//TODO: this can be in a dal client
-	async validateClientBusiness(params) {
+export const appointmentValidations: AppointmentValidation = {
+	async validateNoDoubleBooking(params) {
 		try {
-			const { data, error } = await dalClient.getById({
-				clientId: params.clientId,
-			})
-			if (error) {
-				return failure(error)
-			}
-			if (data.business !== params.businessId) {
-				return failure(
-					new ValidationError('Client does not belong to the business')
-				)
-			}
-			return success(data.id)
-		} catch (error) {
-			return failure(
-				new DatabaseError('Could not validate client business', error)
-			)
-		}
-	},
-	async create(params) {
-		try {
-			// validate if worker and date already have an appointment ??
-			// TODO: this can be in a dal appointment method
-			const appointmentExist = await db
+			const [appointmentExist] = await db
 				.select()
 				.from(appointment)
 				.where(
 					and(
 						eq(appointment.worker, params.worker),
-						eq(appointment.date, params.appointment.date)
+						eq(appointment.date, params.date)
 					)
 				)
 
-			if (appointmentExist.length > 0) {
+			if (appointmentExist) {
 				return failure(
 					new ValidationError(
 						'Worker already has an appointment at the given date and time'
 					)
 				)
 			}
+			return success(undefined)
+		} catch (error) {
+			return failure(
+				new DatabaseError('Error validating double booking', error)
+			)
+		}
+	},
+}
 
+export const dal: AppointmentDal = {
+	async create(params) {
+		try {
+			// validate if worker and date already have an appointment ??
+			const { error: doubleBookingError } =
+				await appointmentValidations.validateNoDoubleBooking({
+					worker: params.worker,
+					date: params.appointment.date,
+				})
+			if (doubleBookingError) {
+				return failure(doubleBookingError)
+			}
+
+			// validate client belongs to business
 			let clientId = null
 			if (params.appointment.client) {
-				const { data: $clientId, error } = await this.validateClientBusiness({
+				const { data: $clientId, error } = await dalClient.getByBusinessAndId({
 					clientId: params.appointment.client,
 					businessId: params.business,
 				})
 				if (error) {
 					return failure(error)
 				}
-				clientId = $clientId
+				clientId = $clientId.id
 			}
 
 			//TODO: validate services belong to business
-			//TODO: move to service dal
+			//TODO: move to service dal validates
 			const { data, error } = await dalService.getByBusiness({
 				businessId: params.business,
 			})
@@ -152,4 +150,5 @@ export const dal: AppointmentDal = {
 
 		return filters.length > 0 ? and(...filters) : undefined
 	},
+	//TODO: check if client exists
 }

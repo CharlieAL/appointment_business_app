@@ -1,11 +1,33 @@
 import { eq } from 'drizzle-orm'
 import { db } from '~/server/db'
 import { client as clientModule } from '~/server/db/schema/client'
-import { DatabaseError, NotFoundError } from '~/server/errors/dal-error'
+import {
+	DatabaseError,
+	NotFoundError,
+	ValidationError,
+} from '~/server/errors/dal-error'
 import { failure, success } from '~/server/types'
 import type { DalClient } from './types'
 
 export const dal: DalClient = {
+	async getByBusinessAndId(params) {
+		try {
+			const { data, error } = await this.getById({ clientId: params.clientId })
+			if (error) {
+				return failure(error)
+			}
+			if (data.business !== params.businessId) {
+				return failure(
+					new ValidationError('Client does not belong to the business')
+				)
+			}
+			return success(data)
+		} catch (error) {
+			return failure(
+				new DatabaseError('Error getting client by business and id', error)
+			)
+		}
+	},
 	async getById(params) {
 		try {
 			const [client] = await db

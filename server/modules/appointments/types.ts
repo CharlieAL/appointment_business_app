@@ -23,17 +23,20 @@ export const appointmentFiltersSchema = z.object({
 
 export type AppointmentFilters = z.infer<typeof appointmentFiltersSchema>
 
-export type AppointmentDal = {
+export interface AppointmentDal {
 	create(params: {
 		worker: string
 		business: string
 		appointment: CreateAppointment
 	}): AsyncResult<Appointment, DalError>
 	getFilter(params: { filters: AppointmentFilters }): SQL | undefined
-	validateClientBusiness(params: {
-		clientId: string
-		businessId: string
-	}): AsyncResult<string, DalError>
+}
+
+export interface AppointmentValidation {
+	validateNoDoubleBooking(params: {
+		worker: string
+		date: Date
+	}): AsyncResult<void, DalError>
 }
 
 /*

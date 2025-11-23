@@ -18,4 +18,8 @@ export interface DalClient {
 		data: UpdateClientInput
 	}): AsyncResult<Client, DalError>
 	getById(params: { clientId: string }): AsyncResult<Client, DalError>
+	getByBusinessAndId(params: {
+		businessId: string
+		clientId: string
+	}): AsyncResult<Client, DalError>
 }
