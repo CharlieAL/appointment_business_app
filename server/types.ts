@@ -23,7 +23,6 @@ export type Result<T, E = Error> =
 	| { data: null; error: E }
 
 export type AsyncResult<T, E = Error> = Promise<Result<T, E>>
-
 // Helper functions
 export function success<T>(data: T): Result<T, never> {
 	return { data, error: null }

@@ -1,76 +1,48 @@
-import { and, eq, gte } from 'drizzle-orm'
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
-import { db } from '~/server/db'
 import {
-	appointment,
 	createAppointmentSchema,
+	updateAppointmentSchema,
 } from '~/server/db/schema/appointment'
 import { zValidator } from '~/server/lib/validator-wrapper'
 import { authMiddleware } from '~/server/middlewares/auth.middleware'
 import type { HonoEnv } from '~/server/types'
 import { dal } from './dal'
+import { appointmentFiltersSchema } from './types'
 
 /*
-  TODO: get appointments for a business by date range by status by client. and inner join services, client info 
-  GET /appointments?startDate=2024-12-01&endDate=2024-12-31&status=pending&clientId=uuid
+  TODO:test dates when the frontend handle dates
   
-  TODO: post new appointment and insert services in appointmentServices table
-  POST /appointments
-
-  TODO: update appointment
+  TODO: update appointment if not in the past 
   PATCH /appointments/:id
-
-  TODO: dashboard endpoint return {
-    total,
-    pending,
-    completed,
-    earningsOfDay,
-    dates: status, service, client
-  }
-
-  //TODO: validete no create appointment in the past, 
-  //no appointment with the same worker at the same time,
+  
+  TODO: get appointments with details
+  GET /appointments?details=true i dont know if this work with trp!!!!!!!!!!!!! 
 */
 
 const app = new Hono<HonoEnv>()
 	.use(authMiddleware)
-	.get(async (c) => {
-		// get user from auth middleware
-		// get business id from user
-		// todo get appointments from db
-		// get first 10 appointments by date
+	.get(zValidator('query', appointmentFiltersSchema), async (c) => {
+		const filters = c.req.valid('query')
 
-		let data = []
-
-		const $date = c.req.query('date')
 		const user = c.get('user')
+
 		if (!user.business) {
-			c.status(400)
-			return c.json({ message: 'User has no business assigned' })
+			throw new HTTPException(400, { message: 'User has no business assigned' })
 		}
 
-		const date = $date ? new Date($date) : new Date()
-
-		data = await db.query.appointment.findMany({
-			with: {
-				client: {
-					columns: {
-						name: true,
-					},
-				},
-				services: {
-					columns: {
-						service: true,
-					},
-				},
-			},
-			where: and(eq(appointment.business, user.business)),
-			limit: 10,
+		const { data, error } = await dal.get({
+			filters,
+			business: user.business,
 		})
-		console.log('Date query param:', date)
 
-		c.status(201)
+		if (error) {
+			throw new HTTPException(error.code, {
+				message: error.message,
+				cause: error.cause,
+			})
+		}
+
 		return c.json({ data })
 	})
 	.post(zValidator('json', createAppointmentSchema), async (c) => {
@@ -95,6 +67,30 @@ const app = new Hono<HonoEnv>()
 		}
 
 		return c.json({ data }, 201)
+	})
+	.patch(':id', zValidator('json', updateAppointmentSchema), async (c) => {
+		const body = c.req.valid('json')
+		const { id } = c.req.param()
+		const user = c.get('user')
+
+		if (!user.business) {
+			throw new HTTPException(400, { message: 'User has no business assigned' })
+		}
+
+		const { data, error } = await dal.update({
+			data: body,
+			id,
+			business: user.business,
+		})
+
+		if (error) {
+			throw new HTTPException(error.code, {
+				message: error.message,
+				cause: error.cause,
+			})
+		}
+
+		return c.json({ data })
 	})
 
 export { app }

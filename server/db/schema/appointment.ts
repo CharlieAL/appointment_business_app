@@ -90,6 +90,8 @@ export const createAppointmentSchema = insertAppointmentSchema
 		services: z.array(z.object({ id: z.uuid() })).optional(),
 	})
 
+export const updateAppointmentSchema = createAppointmentSchema.partial()
+
 export type Appointment = z.infer<typeof selectAppointmentSchema>
 export type CreateAppointment = z.infer<typeof createAppointmentSchema>
-export type UpdateAppointment = Partial<CreateAppointment>
+export type UpdateAppointment = z.infer<typeof updateAppointmentSchema>

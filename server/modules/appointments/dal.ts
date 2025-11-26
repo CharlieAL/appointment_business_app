@@ -1,4 +1,4 @@
-import { and, eq, gte, lte, type SQL } from 'drizzle-orm'
+import { and, asc, eq, gte, lte, type SQL } from 'drizzle-orm'
 import { db } from '~/server/db'
 import { appointment } from '~/server/db/schema/appointment'
 import { appointmentService } from '~/server/db/schema/appointment_service'
@@ -9,6 +9,32 @@ import { dal as dalService } from '../services/dal'
 import type { AppointmentDal, AppointmentValidation } from './types'
 
 export const appointmentValidations: AppointmentValidation = {
+	getFilter(params) {
+		//TODO: https://orm.drizzle.team/docs/dynamic-query-building if scale this is better
+		const filters: SQL[] = []
+		const { filters: f } = params
+
+		if (f.from && f.to) {
+			if (f.from > f.to) {
+				return failure(
+					new ValidationError('"from" date must be earlier than "to" date')
+				)
+			}
+
+			filters.push(gte(appointment.date, f.from))
+			filters.push(lte(appointment.date, f.to))
+		}
+
+		if (f.status) {
+			filters.push(eq(appointment.status, f.status))
+		}
+
+		if (f.worker) {
+			filters.push(eq(appointment.worker, f.worker))
+		}
+
+		return success(filters.length > 0 ? and(...filters) : undefined)
+	},
 	async validateNoDoubleBooking(params) {
 		try {
 			const [appointmentExist] = await db
@@ -38,8 +64,56 @@ export const appointmentValidations: AppointmentValidation = {
 }
 
 export const dal: AppointmentDal = {
+	async getById(params) {
+		try {
+			const [$appointment] = await db
+				.select()
+				.from(appointment)
+				.where(eq(appointment.id, params.id))
+			if (!appointment) {
+				return failure(new ValidationError('Appointment not found'))
+			}
+			return success($appointment)
+		} catch (error) {
+			return failure(
+				new DatabaseError('Error getting appointment by id', error)
+			)
+		}
+	},
+	async get(params) {
+		try {
+			const { data: fSql, error } = appointmentValidations.getFilter({
+				filters: params.filters,
+			})
+			if (error) {
+				return failure(error)
+			}
+
+			const whereClause = fSql
+				? and(eq(appointment.business, params.business), fSql)
+				: eq(appointment.business, params.business)
+
+			const appointments = await db
+				.select()
+				.from(appointment)
+				.where(whereClause)
+				.orderBy(asc(appointment.date))
+				.limit(100) // TODO: pagination
+
+			return success(appointments)
+		} catch (error) {
+			return failure(new DatabaseError('Error getting appointments', error))
+		}
+	},
 	async create(params) {
 		try {
+			//validate date not in the past
+			const now = new Date()
+			if (params.appointment.date < now) {
+				return failure(
+					new ValidationError('Cannot create appointment in the past')
+				)
+			}
 			// validate if worker and date already have an appointment ??
 			const { error: doubleBookingError } =
 				await appointmentValidations.validateNoDoubleBooking({
@@ -63,7 +137,6 @@ export const dal: AppointmentDal = {
 				clientId = $clientId.id
 			}
 
-			//TODO: validate services belong to business
 			//TODO: move to service dal validates
 			const { data, error } = await dalService.getByBusiness({
 				businessId: params.business,
@@ -130,25 +203,33 @@ export const dal: AppointmentDal = {
 			return failure(new DatabaseError('Error appointment', error))
 		}
 	},
-	getFilter(params) {
-		//TODO: https://orm.drizzle.team/docs/dynamic-query-building if scale this is better
-		const filters: SQL[] = []
-		const { filters: f } = params
+	async update(params) {
+		try {
+			// validate appointment exists and belongs to business
+			const { data: existingAppointment, error: getError } = await this.getById(
+				{
+					id: params.id,
+				}
+			)
+			if (getError) {
+				return failure(getError)
+			}
+			if (existingAppointment.business !== params.business) {
+				return failure(
+					new ValidationError('Appointment does not belong to business')
+				)
+			}
 
-		if (f.from && f.to) {
-			filters.push(gte(appointment.date, f.from))
-			filters.push(lte(appointment.date, f.to))
+			const [$appointment] = await db
+				.update(appointment)
+				.set({
+					...params.data,
+				})
+				.where(eq(appointment.id, params.id))
+				.returning()
+			return success($appointment)
+		} catch (error) {
+			return failure(new DatabaseError('Error updating appointment', error))
 		}
-
-		if (f.status) {
-			filters.push(eq(appointment.status, f.status))
-		}
-
-		if (f.worker) {
-			filters.push(eq(appointment.worker, f.worker))
-		}
-
-		return filters.length > 0 ? and(...filters) : undefined
 	},
-	//TODO: check if client exists
 }
