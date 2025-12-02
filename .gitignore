@@ -28,3 +28,4 @@ dist-ssr
 
 # docker generated files ./server/db/files/postgresql
 server/db/files
+server/db/migrations
