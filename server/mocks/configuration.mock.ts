@@ -5,6 +5,7 @@ export const mockConfiguration = (businessId: string): Configuration => ({
 	id: faker.string.uuid(),
 	duration: faker.number.int(60),
 	emailNotification: faker.datatype.boolean(),
+    timezone: faker.location.timeZone(),
 	business: businessId,
 	createdAt: faker.date.recent(),
 	updatedAt: faker.date.recent(),

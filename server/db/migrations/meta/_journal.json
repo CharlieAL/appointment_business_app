@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1763170866437,
-      "tag": "0000_careful_norrin_radd",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1763634669200,
-      "tag": "0001_tired_supreme_intelligence",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1763766138573,
-      "tag": "0002_nasty_rockslide",
+      "when": 1764656804626,
+      "tag": "0000_tiresome_spot",
       "breakpoints": true
     }
   ]

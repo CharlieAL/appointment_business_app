@@ -1,4 +1,3 @@
-import { faker } from '@faker-js/faker'
 import type { AppointmentService } from '~/server/db/schema/appointment_service'
 
 export const mockAppointmentService = ({
@@ -8,14 +7,11 @@ export const mockAppointmentService = ({
 	service: string
 	appointment: string
 }): AppointmentService => ({
-	id: faker.string.uuid(),
 	service: service,
 	appointment: appointment,
-	createdAt: faker.date.recent(),
-	updatedAt: faker.date.recent(),
 })
 
-type AS = {
+export type AS = {
 	appointmentId: string[]
 	serviceIds: string[]
 }

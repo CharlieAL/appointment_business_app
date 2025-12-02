@@ -1,5 +1,5 @@
 {
-  "id": "98d6aa33-50e1-41dc-9f37-e49a7990a796",
+  "id": "d08362e0-d013-4f20-b7b1-37069c5d559b",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -126,6 +126,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "business_id": {
+          "name": "business_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
         "worker_id": {
           "name": "worker_id",
           "type": "text",
@@ -162,6 +168,19 @@
           "onDelete": "set null",
           "onUpdate": "no action"
         },
+        "appointments_business_id_business_id_fk": {
+          "name": "appointments_business_id_business_id_fk",
+          "tableFrom": "appointments",
+          "tableTo": "business",
+          "columnsFrom": [
+            "business_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
         "appointments_worker_id_user_id_fk": {
           "name": "appointments_worker_id_user_id_fk",
           "tableFrom": "appointments",
@@ -177,7 +196,16 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "appointments_date_worker_id_unique": {
+          "name": "appointments_date_worker_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "date",
+            "worker_id"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -679,6 +707,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": false
+        },
+        "timezone": {
+          "name": "timezone",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
         },
         "business_id": {
           "name": "business_id",

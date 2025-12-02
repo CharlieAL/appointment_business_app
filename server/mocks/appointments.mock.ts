@@ -39,12 +39,12 @@ const appointmentsTime = [
 	'18',
 ]
 
-interface ClientsAndBusiness {
+export interface ClientsAndBusiness {
 	ids: string[]
 	businessId: string
 }
 
-interface UsersAndBusiness {
+export interface UsersAndBusiness {
 	ids: string[]
 	businessId: string
 }
@@ -55,7 +55,6 @@ export const mockAppointments = ({
 }: {
 	clients: ClientsAndBusiness[]
 	users: UsersAndBusiness[]
-	perBusiness: number
 }): Appointment[] => {
 	const getUsersByBusiness = (id: string): string[] =>
 		users.filter((u) => u.businessId === id)[0].ids
@@ -77,7 +76,7 @@ export const mockAppointments = ({
 		const [date] = faker.date.soon({ days: 3 }).toISOString().split('T')
 
 		appointmentsTime.forEach((at, index) => {
-			const dateS = `${date}T${at}:00:00.000Z`
+			const dateS = `${date} ${at}:00`
 
 			testAppoints.push({
 				business: client.businessId,
@@ -91,7 +90,7 @@ export const mockAppointments = ({
 		mockAppointment({
 			business: a.business,
 			clientId: a.clientId,
-			workerId: a.userId,
+			workerId: a.userId || process.env.USER_ID || '',
 			startTime: a.startTime,
 		})
 	)

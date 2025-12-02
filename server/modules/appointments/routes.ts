@@ -11,13 +11,8 @@ import { dal } from './dal'
 import { appointmentFiltersSchema } from './types'
 
 /*
-  TODO:test dates when the frontend handle dates
-  
-  TODO: update appointment if not in the past 
-  PATCH /appointments/:id
-  
   TODO: get appointments with details
-  GET /appointments?details=true i dont know if this work with trp!!!!!!!!!!!!! 
+  GET /appointments?details=true i dont know if this work with trp!!!!!!!!!!!!!
 */
 
 const app = new Hono<HonoEnv>()
@@ -48,6 +43,7 @@ const app = new Hono<HonoEnv>()
 	.post(zValidator('json', createAppointmentSchema), async (c) => {
 		const body = c.req.valid('json')
 		const user = c.get('user')
+        const now = new Date()
 
 		if (!user.business) {
 			throw new HTTPException(400, { message: 'User has no business assigned' })
@@ -57,6 +53,7 @@ const app = new Hono<HonoEnv>()
 			appointment: body,
 			worker: user.id,
 			business: user.business,
+            now,
 		})
 
 		if (error) {
@@ -69,9 +66,11 @@ const app = new Hono<HonoEnv>()
 		return c.json({ data }, 201)
 	})
 	.patch(':id', zValidator('json', updateAppointmentSchema), async (c) => {
+
 		const body = c.req.valid('json')
-		const { id } = c.req.param()
-		const user = c.get('user')
+        const { id } = c.req.param()
+        const user = c.get('user')
+        const now = new Date()
 
 		if (!user.business) {
 			throw new HTTPException(400, { message: 'User has no business assigned' })
@@ -81,6 +80,7 @@ const app = new Hono<HonoEnv>()
 			data: body,
 			id,
 			business: user.business,
+            now,
 		})
 
 		if (error) {

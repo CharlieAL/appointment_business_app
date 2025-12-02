@@ -6,6 +6,7 @@ import {
 	timestamp,
 	unique,
 	uuid,
+	varchar,
 } from 'drizzle-orm/pg-core'
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
@@ -17,6 +18,7 @@ export const configuration = pgTable(
 		id: uuid('id').primaryKey().defaultRandom(),
 		duration: integer('duration').notNull(),
 		emailNotification: boolean('email_notification').default(false).notNull(),
+		timezone: varchar('timezone', { length: 100 }).notNull(),
 		business: uuid('business_id')
 			.notNull()
 			.references(() => business.id, { onDelete: 'cascade' }),
@@ -40,6 +42,17 @@ export const insertConfigurationSchema = createInsertSchema(configuration, {
 	duration: z.number().min(1, { message: 'Duration is required' }),
 	emailNotification: z.boolean().default(false),
 	business: z.uuid({ message: 'Business ID must be a valid UUID' }),
+	timezone: z.string().refine(
+		(val) => {
+			try {
+				Intl.DateTimeFormat(undefined, { timeZone: val })
+				return true
+			} catch {
+				return false
+			}
+		},
+		{ message: 'Invalid timezone' }
+	),
 })
 
 export const selectConfigurationSchema = createSelectSchema(configuration)

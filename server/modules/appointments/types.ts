@@ -53,6 +53,7 @@ export interface AppointmentDal {
 		worker: string
 		business: string
 		appointment: CreateAppointment
+        now: Date
 	}): AsyncResult<Appointment, DalError>
 	get(params: {
 		filters: AppointmentFilters
@@ -63,6 +64,7 @@ export interface AppointmentDal {
 		data: UpdateAppointment
 		id: string
 		business: string
+        now: Date
 	}): AsyncResult<Appointment, DalError>
 
 	// delete(params: {

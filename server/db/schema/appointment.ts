@@ -65,6 +65,7 @@ export const appointmentRelations = relations(appointment, ({ one, many }) => ({
 }))
 
 export const insertAppointmentSchema = createInsertSchema(appointment, {
+    //this convert string to date utc "new Date(string)"
 	date: z.coerce.date({ message: 'must be a valid date value' }),
 	duration: z.number().min(1, { message: 'Duration is required' }),
 	profit: z

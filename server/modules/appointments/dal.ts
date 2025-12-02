@@ -107,25 +107,28 @@ export const dal: AppointmentDal = {
 	},
 	async create(params) {
 		try {
+
 			//validate date not in the past
-			const now = new Date()
-			if (params.appointment.date < now) {
+			if (params.appointment.date < params.now) {
 				return failure(
 					new ValidationError('Cannot create appointment in the past')
 				)
 			}
+
 			// validate if worker and date already have an appointment ??
 			const { error: doubleBookingError } =
 				await appointmentValidations.validateNoDoubleBooking({
 					worker: params.worker,
 					date: params.appointment.date,
 				})
+
 			if (doubleBookingError) {
 				return failure(doubleBookingError)
 			}
 
 			// validate client belongs to business
 			let clientId = null
+
 			if (params.appointment.client) {
 				const { data: $clientId, error } = await dalClient.getByBusinessAndId({
 					clientId: params.appointment.client,
@@ -205,6 +208,12 @@ export const dal: AppointmentDal = {
 	},
 	async update(params) {
 		try {
+            // validate date not in the past
+            if (params.data.date && params.data.date < params.now) {
+                return failure(
+                    new ValidationError('Cannot update appointment to a past date')
+                )
+            }
 			// validate appointment exists and belongs to business
 			const { data: existingAppointment, error: getError } = await this.getById(
 				{
