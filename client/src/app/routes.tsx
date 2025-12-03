@@ -1,29 +1,44 @@
-import { Link, Route, Switch } from 'wouter'
+import type { JSX } from 'react'
+import { Route, Router, Switch, useLocation } from 'wouter'
+import { useAuth } from '@/hooks/useAuth'
+import { AuthLayout } from '@/modules/auth/layouts/auth.layout'
+import { SignInPage } from '@/modules/auth/pages/sign-in'
+import { SignUpPage } from '@/modules/auth/pages/sign-up'
 import { DashboardPage } from '@/modules/dashboard/pages'
 
 export function Routes() {
 	return (
 		<Switch>
-			<Route path="/" component={DashboardPage} />
-			<Route path="/about" component={About} />
+            <Route path="/" component={DashboardPage}  />
+			<Router base="/auth">
+				<AuthLayout>
+					<Route path="/login" component={SignInPage} />
+					<Route path="/register" component={SignUpPage} />
+				</AuthLayout>
+			</Router>
 		</Switch>
 	)
 }
 
-function Home() {
-	return (
-		<div>
-			<h1>Home Page</h1>
-			<Link href="/about">Go to About Page</Link>
-		</div>
-	)
-}
+//this works but i dont like the loading is needed to avoid flicker
+function ProtectedRoute({
+	component,
+	path,
+}: {
+	component: JSX.Element
+	path: string
+}) {
+	const { user, isLoading } = useAuth()
+	const [_, navigate] = useLocation()
 
-function About() {
-	return (
-		<div>
-			<h1>About Page</h1>
-			<Link href="/">Go to Home Page</Link>
-		</div>
-	)
+    if (isLoading) {
+        return null
+    }
+
+	if (!user) {
+		navigate('/auth/login')
+		return null
+	}
+
+	return <Route path={path}>{component}</Route>
 }

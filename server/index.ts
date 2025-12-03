@@ -10,7 +10,8 @@ import { sendEmail } from './utils/email'
 const app = new Hono().basePath('')
 
 app.use(logger())
-app.use(cors())
+// Enable CORS for localhost:5173
+app.use(cors({ origin: 'http://localhost:5173', credentials: true }))
 
 const ApiRoutes = app
 	.get('/', (c) => {

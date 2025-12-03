@@ -55,7 +55,7 @@ async function seedMeee(businessId: string, userId: string) {
     // delete existing data for the business to avoid duplicates
     console.log('Deleting existing data...')
     await db.transaction(async (tx) => {
-        await tx.delete(ASModel)
+      await tx.delete(ASModel)
         await tx.delete(ApointmentModel)
         await tx.delete(ServicesModel)
         await tx.delete(DSModel)
