@@ -1,9 +1,9 @@
-import { Plus } from 'lucide-react'
+import { Minus, Plus } from 'lucide-react'
 import { useLocation } from 'wouter'
 import { Button } from '@/components/ui/button'
-import { useAuth } from '@/hooks/useAuth'
 import { authClient } from '@/lib/auth-client'
 import { useUser } from '@/modules/auth/hooks/useUser'
+import { logout } from '@/modules/auth/service/auth.service'
 
 export function DashboardPage() {
 	return (
@@ -20,7 +20,7 @@ export function DashboardPage() {
 
 function Header() {
 	const [_, navigate] = useLocation()
-	const { user } = useUser()
+	const { user,token } = useUser()
 	console.log('user dashboard', user)
 	return (
 		<nav className="w-full flex justify-between items-center h-32 border-b">
@@ -31,14 +31,7 @@ function Header() {
 			<div>
 				<Button
 					onClick={async () => {
-						await authClient.signOut({
-							fetchOptions: {
-								onSuccess: (ctx) => {
-									navigate('/auth/login')
-									console.log('Signed out successfully', ctx)
-								},
-							},
-						})
+                        await logout()
 					}}
 				>
 					<Plus />

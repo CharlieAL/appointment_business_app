@@ -57,6 +57,7 @@ export const createUserSchema = insertUserSchema.omit({
 })
 
 export type User = z.infer<typeof selectUserSchema>
+export type CreateUserschema = z.infer<typeof createUserSchema>
 
 export const session = pgTable('session', {
 	id: text('id').primaryKey(),

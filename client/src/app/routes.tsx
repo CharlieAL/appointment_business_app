@@ -1,6 +1,12 @@
-import type { JSX } from 'react'
-import { Route, Router, Switch, useLocation } from 'wouter'
-import { useAuth } from '@/hooks/useAuth'
+import type { ComponentType } from 'react'
+import {
+	Route,
+	type RouteComponentProps,
+	Router,
+	Switch,
+	useLocation,
+} from 'wouter'
+import { useUser } from '@/modules/auth/hooks/useUser'
 import { AuthLayout } from '@/modules/auth/layouts/auth.layout'
 import { SignInPage } from '@/modules/auth/pages/sign-in'
 import { SignUpPage } from '@/modules/auth/pages/sign-up'
@@ -9,8 +15,8 @@ import { DashboardPage } from '@/modules/dashboard/pages'
 export function Routes() {
 	return (
 		<Switch>
-            <Route path="/" component={DashboardPage}  />
-			<Router base="/auth">
+			<ProtectedRoute path="/" component={DashboardPage} />
+			<Router base="/">
 				<AuthLayout>
 					<Route path="/login" component={SignInPage} />
 					<Route path="/register" component={SignUpPage} />
@@ -19,26 +25,23 @@ export function Routes() {
 		</Switch>
 	)
 }
-
-//this works but i dont like the loading is needed to avoid flicker
+// this works but when the session expires it does not redirect to login
+// i need to delete user in local storage when session expires
+// ProtectedRoute component to protect routes
 function ProtectedRoute({
-	component,
+	component: Component,
 	path,
 }: {
-	component: JSX.Element
+	component: ComponentType<RouteComponentProps>
 	path: string
 }) {
-	const { user, isLoading } = useAuth()
+	const { user } = useUser()
 	const [_, navigate] = useLocation()
 
-    if (isLoading) {
-        return null
-    }
-
 	if (!user) {
-		navigate('/auth/login')
+		navigate('/login')
 		return null
 	}
 
-	return <Route path={path}>{component}</Route>
+	return <Route path={path} component={Component} />
 }

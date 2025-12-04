@@ -67,3 +67,4 @@ export const auth = betterAuth({
 	},
 })
 export type Session = typeof auth.$Infer.Session.session
+export type ErrorCode = keyof typeof auth.$ERROR_CODES

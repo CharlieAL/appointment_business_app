@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { authClient } from '@/lib/auth-client'
+import { register } from '../service/auth.service'
 
 const formSchema = z.object({
 	name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
@@ -34,32 +35,12 @@ export function SignUpPage() {
 
 	// 2. Define a submit handler.
 	async function onSubmit(values: z.infer<typeof formSchema>) {
-		const { data, error } = await authClient.signUp.email(
-			{
-				name: values.name,
-				email: values.email,
-				// this works, but better-auth has no handle others data like phone
-                // sign-up method yet
-				phone: values.phone,
-				password: values.password,
-				callbackURL: '/',
-			},
-			{
-				onRequest: (ctx) => {
-					console.log('onRequest', ctx)
-				},
-				onSuccess: (ctx) => {
-					console.log('onSuccess', ctx)
-					navigate('/', { replace: true })
-				},
-				onError: (ctx) => {
-					console.log('onError', ctx)
-				},
-			}
-		)
-		if (error) {
-			console.error('Error signing in:', error)
-		}
+        const data = await register({
+            name: values.name,
+            email: values.email,
+            phone: values.phone,
+            password: values.password,
+        })
 		console.log('Sign-in data:', data)
 	}
 

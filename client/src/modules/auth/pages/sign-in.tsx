@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { authClient } from '@/lib/auth-client'
 import { useUser } from '../hooks/useUser'
+import { login } from '../service/auth.service'
 
 const formSchema = z.object({
 	email: z.email('Porfavor ingresa un correo válido'),
@@ -24,7 +25,7 @@ const formSchema = z.object({
 })
 
 export function SignInPage() {
-	const { saveUserSession } = useUser()
+	const { saveUserSession, saveToken } = useUser()
     const [_, navigate] = useLocation()
 	const [rememberMe, setRememberMe] = useState(false)
 	const form = useForm<z.infer<typeof formSchema>>({
@@ -37,19 +38,18 @@ export function SignInPage() {
 
 	// 2. Define a submit handler.
 	async function onSubmit(values: z.infer<typeof formSchema>) {
-		const { data, error } = await authClient.signIn.email({
-			email: values.email,
-			password: values.password,
-			rememberMe: rememberMe,
-		})
-		if (error) {
-			console.log('Error signing in:', error)
-		}
+        const data = await login({
+            email: values.email,
+            password: values.password,
+            rememberMe: rememberMe
+        })
 		// save user storage
 		if (data?.user) {
-            // this works but better-auth cant change type of user yet
 			saveUserSession(data.user)
+            saveToken(data.token)
+
 		}
+        // this navigate to /auth but we want to go to /
         navigate('/', {replace:true})
 	}
 

@@ -1,2 +1,2 @@
-export type { User } from './db/schema/auth'
-export type { Session } from './lib/auth'
+export type { CreateUserschema, User } from './db/schema/auth'
+export type { ErrorCode, Session } from './lib/auth'
