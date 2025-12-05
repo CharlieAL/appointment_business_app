@@ -11,8 +11,8 @@ import {
 	FieldLabel,
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { authClient } from '@/lib/auth-client'
 import { register } from '../service/auth.service'
+import { useUser } from '../hooks/useUser'
 
 const formSchema = z.object({
 	name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
@@ -22,6 +22,7 @@ const formSchema = z.object({
 })
 
 export function SignUpPage() {
+	const { saveUserSession, saveToken } = useUser()
 	const [_, navigate] = useLocation()
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
@@ -41,7 +42,12 @@ export function SignUpPage() {
             phone: values.phone,
             password: values.password,
         })
-		console.log('Sign-in data:', data)
+		if (data?.user) {
+			saveUserSession(data.user)
+            saveToken(data.token)
+
+		}
+        navigate('/', {replace:true})
 	}
 
 	return (

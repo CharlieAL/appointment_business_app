@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { GalleryVerticalEnd } from 'lucide-react'
 import { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 import { Link, useLocation } from 'wouter'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
@@ -15,7 +16,6 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
-import { authClient } from '@/lib/auth-client'
 import { useUser } from '../hooks/useUser'
 import { login } from '../service/auth.service'
 
@@ -26,10 +26,14 @@ const formSchema = z.object({
 
 export function SignInPage() {
 	const { saveUserSession, saveToken } = useUser()
-    const [_, navigate] = useLocation()
+	const [_, navigate] = useLocation()
 	const [rememberMe, setRememberMe] = useState(false)
+
+	// i want the data sill there if the user make a mistake
+
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
+		mode: 'onBlur',
 		defaultValues: {
 			email: '',
 			password: '',
@@ -38,19 +42,19 @@ export function SignInPage() {
 
 	// 2. Define a submit handler.
 	async function onSubmit(values: z.infer<typeof formSchema>) {
-        const data = await login({
-            email: values.email,
-            password: values.password,
-            rememberMe: rememberMe
-        })
-		// save user storage
-		if (data?.user) {
-			saveUserSession(data.user)
-            saveToken(data.token)
-
+		const { data, error } = await login({
+			email: values.email,
+			password: values.password,
+			rememberMe: rememberMe,
+		})
+		if (error) {
+			toast.error(error.message)
+			return
 		}
-        // this navigate to /auth but we want to go to /
-        navigate('/', {replace:true})
+		// save user storage
+		saveUserSession(data.user)
+		saveToken(data.token)
+		navigate('/', { replace: true })
 	}
 
 	return (
